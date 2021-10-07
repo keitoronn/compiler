@@ -1,4 +1,8 @@
 package enshud.s0.trial;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Trial {
 
@@ -15,19 +19,35 @@ public class Trial {
 
 	/**
 	 * TODO
-	 * 
+	 *
 	 * 開発対象となるTrial実行メソッド （練習用）．
 	 * 以下の仕様を満たすこと．
-	 * 
+	 *
 	 * 仕様:
 	 * 第一引数で指定されたpascalファイルを読み込み，ファイル行数を標準出力に書き出す．
 	 * 入力ファイルが見つからない場合は標準エラーに"File not found"と出力して終了すること．
-	 * 
+	 *
 	 * @param inputFileName 入力pascalファイル名
 	 */
 	public void run(final String inputFileName) {
 
 		// TODO
+		Path pa = Paths.get(inputFileName);
+		if(Files.exists(pa)){
+				try {
+					long lineCount = Files.lines(pa).count();
+					 System.out.println(lineCount);
+
+				} catch (IOException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
+		}else{
+			 System.out.println("File not found");
+		}
+
+
+
 
 	}
 }
