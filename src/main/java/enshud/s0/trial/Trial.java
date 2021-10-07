@@ -43,7 +43,7 @@ public class Trial {
 					e.printStackTrace();
 				}
 		}else{
-			 System.out.println("File not found");
+			 System.err.println("File not found");
 		}
 
 
