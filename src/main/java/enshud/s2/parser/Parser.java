@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
+
 public class Parser {
 
 	/**
@@ -38,6 +40,13 @@ public class Parser {
 	 *
 	 * @param inputFileName 入力tsファイル名
 	 */
+	
+	class point {
+	    String teigi;
+	    int number;
+	    int kokazu;
+	    int[] ko = new int[1024];
+	}
 	String[] jiku = new String[2048];
 	String[] tokenname = new String[2048];
 	int[] tokenID = new int[2048];
@@ -45,8 +54,15 @@ public class Parser {
 	int n=0;
 	int err=0;
 	int tokensu=0;
+	int pointsuu=0;
+	point[] pinfo = new point[10000];
 
 	void program() {
+		int a = pointsuu;
+		pinfo[a].teigi = "program";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pointsuu++;
 		if (!(jiku[n].equals("program"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -55,6 +71,7 @@ public class Parser {
 			// まず "program" という文字が出てこなければ構文エラー
 		}
 		n++;
+		
 		programName();
 		if (!(jiku[n].equals(";"))) {
 			if(err==0) {
