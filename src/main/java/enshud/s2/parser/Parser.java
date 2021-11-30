@@ -40,12 +40,20 @@ public class Parser {
 	 *
 	 * @param inputFileName 入力tsファイル名
 	 */
-	
+
 	class point {
-	    String teigi;
-	    int number;
-	    int kokazu;
-	    int[] ko = new int[1024];
+		String teigi;
+		int number;
+		int kokazu;
+		int[] ko = new int[1024];
+		point() {
+			this.teigi="";
+			this.number=0;
+			this.kokazu=0;
+			for(int i=0;i<1024;i++) {
+				this.ko[i]=0;
+			}
+		}
 	}
 	String[] jiku = new String[2048];
 	String[] tokenname = new String[2048];
@@ -55,7 +63,7 @@ public class Parser {
 	int err=0;
 	int tokensu=0;
 	int pointsuu=0;
-	point[] pinfo = new point[10000];
+	point[] pinfo = new point[100000];
 
 	void program() {
 		int a = pointsuu;
@@ -71,8 +79,8 @@ public class Parser {
 			// まず "program" という文字が出てこなければ構文エラー
 		}
 		n++;
-		
-		programName();
+
+		programName(a);
 		if (!(jiku[n].equals(";"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -80,8 +88,8 @@ public class Parser {
 			err++; // プログラム名の次に ";" が出てこなければ構文エラー
 		}
 		n++;
-		block();            // 別EBNFメソッド
-		complexStatement(); // 別EBNFメソッド
+		block(a);            // 別EBNFメソッド
+		complexStatement(a); // 別EBNFメソッド
 
 		if (!(jiku[n].equals("."))) {
 			if(err==0) {
@@ -94,7 +102,14 @@ public class Parser {
 	}
 
 
-	void programName() {
+	void programName(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "programName";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if (!(tokenname[n].equals("SIDENTIFIER"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -105,13 +120,27 @@ public class Parser {
 	}
 
 
-	void block() {
-		hensusengen();
-		hukuprogramsengengun();
+	void block(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "block";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		hensusengen(a);
+		hukuprogramsengengun(a);
 	}
 
 
-	void complexStatement() {
+	void complexStatement(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "complexStatement";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 
 		if (!(jiku[n].equals("begin"))) {
 			if(err==0) {
@@ -127,7 +156,7 @@ public class Parser {
 
 
 
-		bunnnonarabi();
+		bunnnonarabi(a);
 		if (!(jiku[n].equals("end"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -139,18 +168,32 @@ public class Parser {
 	}
 
 
-	void hensusengen() {
+	void hensusengen(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensusengen";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if ((jiku[n].equals("var"))) {
 			n++;
-			hensusengennarabi();
+			hensusengennarabi(a);
 		}
 	}
 
 
-	void hukuprogramsengengun() {
+	void hukuprogramsengengun(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hukuprogramsengen";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if ((jiku[n].equals("procedure"))) {
 			while(true) {
-				hukuprogramsengen();
+				hukuprogramsengen(a);
 				if (!(jiku[n].equals(";"))) {
 					System.out.println("procerr");
 					if(err==0) {
@@ -170,9 +213,16 @@ public class Parser {
 	}
 
 
-	void hensusengennarabi() {
+	void hensusengennarabi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensusengennarabi";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		while(true) {
-			hensuumeinarabi();
+			hensuumeinarabi(a);
 			if (!(jiku[n].equals(":"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -180,7 +230,7 @@ public class Parser {
 				err++;
 			}
 			n++;
-			kata();
+			kata(a);
 			if (!(jiku[n].equals(";"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -195,15 +245,29 @@ public class Parser {
 	}
 
 
-	void hukuprogramsengen() {
-		hukuprogramtoubu();
-		hensusengen();
-		complexStatement();
+	void hukuprogramsengen(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hukuprogramsengen";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		hukuprogramtoubu(a);
+		hensusengen(a);
+		complexStatement(a);
 	}
 
 
-	void hensuumeinarabi() {
-		hensuumei();
+	void hensuumeinarabi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensuumeinarabi";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		hensuumei(a);
 		if((jiku[n].equals(","))) {
 			while(true) {
 				if(!(jiku[n].equals(","))) {
@@ -213,7 +277,7 @@ public class Parser {
 					err++;
 				}
 				n++;
-				hensuumei();
+				hensuumei(a);
 				if(!(jiku[n].equals(","))) {
 					break;
 				}
@@ -222,16 +286,57 @@ public class Parser {
 	}
 
 
-	void kata() {
-		if ((jiku[n].equals("integer"))||(jiku[n].equals("char"))||(jiku[n].equals("boolean"))) {
+	void kata(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "kata";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		if ((jiku[n].equals("integer"))) {
+			int c = pointsuu;
+			pinfo[c].teigi = "integer";
+			pinfo[c].number = pointsuu;
+			pinfo[c].kokazu = 0;
+			pinfo[a].ko[pinfo[a].kokazu]=c;
+			pinfo[a].kokazu++;
+			pointsuu++;
 			n++;
-		}else {
-			hairetugata();
+		}else if(jiku[n].equals("char")) {
+			int c = pointsuu;
+			pinfo[c].teigi = "char";
+			pinfo[c].number = pointsuu;
+			pinfo[c].kokazu = 0;
+			pinfo[a].ko[pinfo[a].kokazu]=c;
+			pinfo[a].kokazu++;
+			pointsuu++;
+			n++;
+		}
+		else if(jiku[n].equals("boolean")) {
+			int c = pointsuu;
+			pinfo[c].teigi = "boolean";
+			pinfo[c].number = pointsuu;
+			pinfo[c].kokazu = 0;
+			pinfo[a].ko[pinfo[a].kokazu]=c;
+			pinfo[a].kokazu++;
+			pointsuu++;
+			n++;
+		}
+		else {
+			hairetugata(a);
 		}
 	}
 
 
-	void hensuumei() {
+	void hensuumei(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensuumei";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if (!(tokenname[n].equals("SIDENTIFIER"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -242,7 +347,14 @@ public class Parser {
 	}
 
 
-	void hairetugata() {
+	void hairetugata(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hairetugata";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if (!(jiku[n].equals("array"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -257,7 +369,7 @@ public class Parser {
 			err++;
 		}
 		n++;
-		seisuu();
+		seisuu(a);
 		if (!(jiku[n].equals(".."))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -265,7 +377,7 @@ public class Parser {
 			err++;
 		}
 		n++;
-		seisuu();
+		seisuu(a);
 		if (!(jiku[n].equals("]"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -280,11 +392,18 @@ public class Parser {
 			err++;
 		}
 		n++;
-		hyoujungata();
+		hyoujungata(a);
 	}
 
 
-	void seisuu() {
+	void seisuu(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "seisuu";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if(jiku[n].equals("+")) {
 			n++;
 		}else if(jiku[n].equals("-")) {
@@ -301,7 +420,14 @@ public class Parser {
 
 	}
 
-	void hyoujungata() {
+	void hyoujungata(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hyoujungata";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 
 		if(jiku[n].equals("integer")) {
 			n++;
@@ -318,7 +444,14 @@ public class Parser {
 	}
 
 
-	void hukuprogramtoubu() {
+	void hukuprogramtoubu(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hukuprogramtoubu";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if (!(jiku[n].equals("procedure"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -333,7 +466,7 @@ public class Parser {
 			err++;
 		}
 		n++;
-		kariparameter();
+		kariparameter(a);
 		if (!(jiku[n].equals(";"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -344,10 +477,17 @@ public class Parser {
 	}
 
 
-	void kariparameter(){
+	void kariparameter(int b){
+		int a = pointsuu;
+		pinfo[a].teigi = "kariparameter";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if ((jiku[n].equals("("))) {
 			n++;
-			kariparameterorder();
+			kariparameterorder(a);
 			if (!(jiku[n].equals(")"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -360,8 +500,15 @@ public class Parser {
 	}
 
 
-	void kariparameterorder(){
-		kariparameternameorder();
+	void kariparameterorder(int b){
+		int a = pointsuu;
+		pinfo[a].teigi = "hensuumei";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		kariparameternameorder(a);
 		if (!(jiku[n].equals(":"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -369,7 +516,7 @@ public class Parser {
 			err++;
 		}
 		n++;
-		hyoujungata();
+		hyoujungata(a);
 		if(jiku[n].equals(";")) {
 			while(true) {
 				if (!(jiku[n].equals(";"))) {
@@ -379,7 +526,7 @@ public class Parser {
 					err++;
 				}
 				n++;
-				kariparameternameorder();
+				kariparameternameorder(a);
 				if (!(jiku[n].equals(":"))) {
 					if(err==0) {
 						System.err.println("Syntax error: line "+gyou[n]);
@@ -387,7 +534,7 @@ public class Parser {
 					err++;
 				}
 				n++;
-				hyoujungata();
+				hyoujungata(a);
 				if (!(jiku[n].equals(";"))) {
 					break;
 				}
@@ -396,7 +543,14 @@ public class Parser {
 	}
 
 
-	void kariparameternameorder() {
+	void kariparameternameorder(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "kariparameternameorder";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if (!(tokenname[n].equals("SIDENTIFIER"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -428,8 +582,15 @@ public class Parser {
 	}
 
 
-	void bunnnonarabi() {
-		bun();
+	void bunnnonarabi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "bunnnonarabi";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		bun(a);
 		if (!(jiku[n].equals(";"))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -439,7 +600,7 @@ public class Parser {
 		n++;
 		if (!(jiku[n].equals("end"))) {
 			while(true) {
-				bun();
+				bun(a);
 				if (!(jiku[n].equals(";"))) {
 					if(err==0) {
 						System.err.println("Syntax error: line "+gyou[n]);
@@ -460,11 +621,18 @@ public class Parser {
 	}
 
 
-	void bun(){
+	void bun(int b){
+		int a = pointsuu;
+		pinfo[a].teigi = "bun";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		//System.out.println(tokenname[n]);
 		if ((jiku[n].equals("if"))) {
 			n++;
-			siki();
+			siki(a);
 			if (!(jiku[n].equals("then"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -472,14 +640,14 @@ public class Parser {
 				err++;
 			}
 			n++;
-			complexStatement();
+			complexStatement(a);
 			if((jiku[n].equals("else"))) {
 				n++;
-				complexStatement();
+				complexStatement(a);
 			}
 		}else if(jiku[n].equals("while")) {
 			n++;
-			siki();
+			siki(a);
 			if (!(jiku[n].equals("do"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -487,26 +655,33 @@ public class Parser {
 				err++;
 			}
 			n++;
-			complexStatement();
+			complexStatement(a);
 		}else {
-			kihonbun();
+			kihonbun(a);
 		}
 	}
 
 
-	void kihonbun() {
+	void kihonbun(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "kihonbun";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if((tokenname[n].equals("SIDENTIFIER"))) {
 			if(jiku[n+1].equals(":=")) {
-				dainyuubun();
+				dainyuubun(a);
 			}else if(jiku[n+1].equals("[")) {
-				dainyuubun();
+				dainyuubun(a);
 			}else {
-				tetudukiyobidasi();
+				tetudukiyobidasi(a);
 			}
 		}else if((jiku[n].equals("readln"))||(jiku[n].equals("writeln"))) {
-			nyuusyuturyokubun();
+			nyuusyuturyokubun(a);
 		}else if(jiku[n].equals("begin")) {
-			complexStatement();
+			complexStatement(a);
 		}else {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -516,8 +691,15 @@ public class Parser {
 		}
 	}
 
-	void dainyuubun() {
-		sahen();
+	void dainyuubun(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "dainyuubun";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		sahen(a);
 		if (!(jiku[n].equals(":="))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -525,16 +707,30 @@ public class Parser {
 			err++;
 		}
 		n++;
-		siki();
+		siki(a);
 	}
 
 
-	void sahen() {
-		hensuu();
+	void sahen(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "sahen";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		hensuu(a);
 	}
 
 
-	void hensuu() {
+	void hensuu(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensuu";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if(!tokenname[n].equals("SIDENTIFIER")) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -544,7 +740,7 @@ public class Parser {
 		n++;
 		if(jiku[n].equals("[")) {
 			n++;
-			soeji();
+			soeji(a);
 			if (!(jiku[n].equals("]"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -556,12 +752,26 @@ public class Parser {
 	}
 
 
-	void soeji() {
-		siki();
+	void soeji(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "soeji";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		siki(a);
 	}
 
 
-	void tetudukiyobidasi() {
+	void tetudukiyobidasi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "tetudukiyodobasi";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if(!tokenname[n].equals("SIDENTIFIER")) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -571,7 +781,7 @@ public class Parser {
 		n++;
 		if(jiku[n].equals("(")) {
 			n++;
-			sikinonarabi();
+			sikinonarabi(a);
 			if (!(jiku[n].equals(")"))) {
 				if(err==0) {
 					System.err.println("Syntax error: line "+gyou[n]);
@@ -583,8 +793,15 @@ public class Parser {
 
 	}
 
-	void sikinonarabi() {
-		siki();
+	void sikinonarabi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "sikinonarabi";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		siki(a);
 		if(jiku[n].equals(",")) {
 			while(true) {
 				if(!(jiku[n].equals(","))){
@@ -594,7 +811,7 @@ public class Parser {
 					err++;
 				}
 				n++;
-				siki();
+				siki(a);
 
 				if(!(jiku[n].equals(","))){
 					break;
@@ -604,24 +821,38 @@ public class Parser {
 	}
 
 
-	void siki() {
-		tanjunsiki();
+	void siki(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "siki";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		tanjunsiki(a);
 		if((jiku[n].equals("="))||(jiku[n].equals("<>"))||(jiku[n].equals("<"))||(jiku[n].equals("<="))||(jiku[n].equals(">"))||(jiku[n].equals(">="))) {
 			n++;
-			tanjunsiki();
+			tanjunsiki(a);
 		}
 	}
 
 
-	void tanjunsiki() {
+	void tanjunsiki(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "tanjunsiki";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if((jiku[n].equals("+"))||(jiku[n].equals("-"))) {
 			n++;
 		}
-		kou();
+		kou(a);
 		if((jiku[n].equals("+"))||(jiku[n].equals("-"))||(jiku[n].equals("or"))) {
 			while(true) {
 				n++;
-				kou();
+				kou(a);
 				if(!((jiku[n].equals("+"))||(jiku[n].equals("-"))||(jiku[n].equals("or")))) {
 					break;
 				}
@@ -629,12 +860,19 @@ public class Parser {
 		}
 	}
 
-	void kou() {
-		insi();
+	void kou(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "kou";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		insi(a);
 		if((jiku[n].equals("*"))||(jiku[n].equals("/"))||(jiku[n].equals("div"))||(jiku[n].equals("mod"))||(jiku[n].equals("and"))) {
 			while(true) {
 				n++;
-				insi();
+				insi(a);
 				if(!((jiku[n].equals("*"))||(jiku[n].equals("/"))||(jiku[n].equals("div"))||(jiku[n].equals("mod"))||(jiku[n].equals("and")))) {
 					break;
 				}
@@ -643,31 +881,45 @@ public class Parser {
 	}
 
 
-	void insi() {
+	void insi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensuumei";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if(tokenname[n].equals("SIDENTIFIER")) {
-			hensuu();
+			hensuu(a);
 		}else if(jiku[n].equals("(")) {
 			n++;
-			siki();
+			siki(a);
 			if (!(jiku[n].equals(")"))) {
 				System.out.println("insi1err");
 			}
 			n++;
 		}else if(jiku[n].equals("not")) {
 			n++;
-			insi();
+			insi(a);
 		}else {
-			teisuu();
+			teisuu(a);
 		}
 	}
 
 
-	void nyuusyuturyokubun() {
+	void nyuusyuturyokubun(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "nyuusyuturyokubun";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if(jiku[n].equals("readln")) {
 			n++;
 			if(jiku[n].equals("(")) {
 				n++;
-				hensuunonarabi();
+				hensuunonarabi(a);
 				if (!(jiku[n].equals(")"))) {
 					if(err==0) {
 						System.err.println("Syntax error: line "+gyou[n]);
@@ -680,7 +932,7 @@ public class Parser {
 			n++;
 			if(jiku[n].equals("(")) {
 				n++;
-				sikinonarabi();
+				sikinonarabi(a);
 				if (!(jiku[n].equals(")"))) {
 					if(err==0) {
 						System.err.println("Syntax error: line "+gyou[n]);
@@ -694,12 +946,19 @@ public class Parser {
 	}
 
 
-	void hensuunonarabi() {
-		hensuu();
+	void hensuunonarabi(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "hensuunonarabi";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
+		hensuu(a);
 		if(jiku[n].equals(",")) {
 			while(true) {
 				n++;
-				hensuu();
+				hensuu(a);
 				if(!(jiku[n].equals(","))) {
 					break;
 				}
@@ -707,7 +966,14 @@ public class Parser {
 		}
 	}
 
-	void teisuu() {
+	void teisuu(int b) {
+		int a = pointsuu;
+		pinfo[a].teigi = "teisuu";
+		pinfo[a].number = pointsuu;
+		pinfo[a].kokazu = 0;
+		pinfo[b].ko[pinfo[b].kokazu]=a;
+		pinfo[b].kokazu++;
+		pointsuu++;
 		if(!((tokenname[n].equals("SCONSTANT"))||(tokenname[n].equals("SSTRING"))||(jiku[n].equals("false"))||(jiku[n].equals("true")))) {
 			if(err==0) {
 				System.err.println("Syntax error: line "+gyou[n]);
@@ -743,10 +1009,26 @@ public class Parser {
 
 					tokensu++;
 				}
+				for(int s=0;s<100000;s++) {
+					pinfo[s]=new point();
+				}
+
 
 				program();
 				if(err==0) {
-				System.out.println("OK");
+					System.out.println("OK");
+					for(int s=0;s<pointsuu;s++) {
+						System.out.println(pinfo[s].number);
+						System.out.println(pinfo[s].teigi);
+						System.out.println(pinfo[s].kokazu);
+						System.out.println("ko");
+						if(pinfo[s].kokazu>0) {
+							for(int t=0;t<pinfo[s].kokazu;t++) {
+								System.out.println(pinfo[s].ko[t]);
+							}
+						}
+						System.out.println("\n");
+					}
 				}
 			}
 			catch (IOException e) {
