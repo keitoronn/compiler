@@ -1132,7 +1132,7 @@ public class Checker {
 									if(hensusu>1) {
 										for(int v=0;v<hensusu;v++) {
 											if(err==0&&pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].goku.equals(huku[prosu].namae[v])&&(chou==0)) {
-												System.err.println("Semantic error: line "+gyou[pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum]);
+												System.err.println("ASemantic error: line "+gyou[pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum]);
 												chou++;
 											}
 										}
@@ -1140,13 +1140,13 @@ public class Checker {
 									if(chou==0) {
 										huku[prosu].namae[hensusu]=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].goku;
 										huku[prosu].tnum[hensusu]=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum;
-										for(int v=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum;v<pointsuu;v++) {
+										for(int v=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].number;v<pointsuu;v++) {
 											if(pinfo[v].teigi.equals("hyoujungata")) {
 												huku[prosu].hyoujun[hensusu]=pinfo[v].goku;
 												break;
 											}
 										}
-										for(int v=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum;v<pointsuu;v++) {
+										for(int v=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].number;v<pointsuu;v++) {
 											if(pinfo[v].teigi.equals("kata")) {
 												if(pinfo[pinfo[v].ko[0]].teigi.equals("hairetugata")) {
 													huku[prosu].kata[hensusu]="hairetugata";
@@ -1252,7 +1252,7 @@ public class Checker {
 					}
 				}
 				if(detekita==0&&err==0) {
-					System.err.println("Semantic error: line "+gyou[pinfo[a[j]].tnum]);
+					System.err.println("BSemantic error: line "+gyou[pinfo[a[j]].tnum]);
 					err++;
 				}
 				detekita=0;
@@ -1275,7 +1275,7 @@ public class Checker {
 							for(int q=0;q<huku[p].hensukazu;q++) {
 								if(pinfo[b[i]].goku.equals(huku[p].namae[q])) {
 									if(huku[p].hyoujun[q].equals("boolean")&&err==0) {
-										System.err.println("Semantic error: line "+gyou[pinfo[b[i]].tnum]);
+										System.err.println("CSemantic error: line "+gyou[pinfo[b[i]].tnum]);
 										err++;
 									}
 								}
@@ -1298,8 +1298,8 @@ public class Checker {
 					for(int q=0;q<huku[p].hensukazu;q++) {
 						if(pinfo[a[i]].goku.equals(huku[p].namae[q])) {
 							if(huku[p].kata[q].equals("hairetugata")) {
-								if(!(pinfo[pinfo[a[i]].ko[1]].teigi.equals("soeji"))) {//子の数見てる
-									System.err.println("Semantic error: line "+gyou[pinfo[a[i]].tnum]);
+								if((!(pinfo[pinfo[a[i]].ko[1]].teigi.equals("soeji")))&&err==0) {//子の数見てる
+									System.err.println("DSemantic error: line "+gyou[pinfo[a[i]].tnum]);
 									err++;
 								}
 							}
@@ -1318,17 +1318,59 @@ public class Checker {
 			if(pinfo[a[i]].goku.equals("if")) {
 				int n;
 				n=pinfo[a[i]].ko[0];
-				if(pinfo[n].kokazu<2&&err==0) {//子の数でみてる
-					System.err.println("Semantic error: line "+gyou[pinfo[a[i]].tnum]);
-					err++;
+				int[] b = new int[1024];
+				saikisearch("siki",a[i],b);
+				for(int j=0;j<1024;j++) {
+					if(b[j]>0) {
+						int[] c = new int[1024];
+						saikisearch("siki",b[j],c);
+						if((!(c[0]>0))&&pinfo[b[j]].kokazu==1 ){
+							for(int p=0;p<prosu;p++) {
+								for(int q=0;q<huku[p].hensukazu;q++) {
+									if(pinfo[b[j]].goku.equals(huku[p].namae[q])) {
+										if(huku[p].hyoujun[q].equals("integer")&&err==0) {
+											System.err.println("ESemantic error: line "+gyou[pinfo[b[j]].tnum]);
+											System.err.println(b[j]);
+											err++;
+										}
+										else if(huku[p].hyoujun[q].equals("char")&&err==0) {
+											System.err.println("ESemantic error: line "+gyou[pinfo[b[j]].tnum]);
+											err++;
+										}
+									}
+
+								}
+							}
+							
+						}
+					}
 				}
 			}
 			if(pinfo[a[i]].goku.equals("while")) {
 				int n;
 				n=pinfo[a[i]].ko[0];
-				if(pinfo[n].kokazu<2&&err==0) {//子の数でみてる
-					System.err.println("Semantic error: line "+gyou[pinfo[a[i]].tnum]);
-					err++;
+				if(pinfo[n].kokazu==1) {
+					int[] b = new int[1024];
+					saikisearch("hensuumei",n,b);
+					for(int j=0;j<1024;j++) {
+						if(b[j]>0) {
+							for(int p=0;p<prosu;p++) {
+								for(int q=0;q<huku[p].hensukazu;q++) {
+									if(pinfo[b[j]].goku.equals(huku[p].namae[q])) {
+										if(huku[p].hyoujun[q].equals("integer")&&err==0) {
+											System.err.println("ESemantic error: line "+gyou[pinfo[b[j]].tnum]);
+											err++;
+										}
+										else if(huku[p].hyoujun[q].equals("char")&&err==0) {
+											System.err.println("ESemantic error: line "+gyou[pinfo[b[j]].tnum]);
+											err++;
+										}
+									}
+
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1352,7 +1394,7 @@ public class Checker {
 							nani[kazu]=pinfo[pinfo[pinfo[pinfo[b[j]].ko[0]].ko[0]].ko[0]].teigi;
 							if(kazu>=1) {
 								if((!nani[kazu].equals(nani[kazu-1]))&&err==0 ){
-									System.err.println("Semantic error: line "+gyou[pinfo[b[j]].tnum]);
+									System.err.println("GSemantic error: line "+gyou[pinfo[b[j]].tnum]);
 									err++;
 								}
 							}
@@ -1385,7 +1427,7 @@ public class Checker {
 							nani[kazu]=pinfo[pinfo[pinfo[pinfo[b[j]].ko[0]].ko[0]].ko[0]].teigi;
 							if(kazu>=1) {
 								if((!nani[kazu].equals(nani[kazu-1]))&&err==0 ){
-									System.err.println("Semantic error: line "+gyou[pinfo[b[j]].tnum]);
+									System.err.println("HSemantic error: line "+gyou[pinfo[b[j]].tnum]);
 									err++;
 								}
 							}
@@ -1451,16 +1493,40 @@ public class Checker {
 				arraycheck();
 				joukensikicheck();
 				hienzancheck();
-				for(int i=0;i<prosu;i++) {
+				/*for(int i=0;i<prosu;i++) {
 					for(int j=0;j<huku[i].hensukazu;j++) {
 						System.out.println(huku[i].namae[j]);
 						System.out.println(huku[i].hyoujun[j]);
 						System.out.println(huku[i].kata[j]);
 
 					}
-				}
+				}*/
 				if(err==0) {
 					System.out.println("OK");
+					/*for(int s=0;s<pointsuu;s++) {
+						System.out.println(pinfo[s].number);
+						System.out.println(pinfo[s].goku);
+						System.out.println(pinfo[s].tnum);
+						System.out.println(pinfo[s].teigi);
+						System.out.println(pinfo[s].kokazu);
+						System.out.println("ko");
+						if(pinfo[s].kokazu>0) {
+							for(int t=0;t<pinfo[s].kokazu;t++) {
+								System.out.println(pinfo[s].ko[t]);
+							}
+						}
+						System.out.println("\n");
+					}
+					for(int i=0;i<prosu;i++) {
+						for(int j=0;j<huku[i].hensukazu;j++) {
+							System.out.println(huku[i].namae[j]);
+							System.out.println(huku[i].hyoujun[j]);
+							System.out.println(huku[i].kata[j]);
+
+						}
+					}*/
+				}
+				else {
 					for(int s=0;s<pointsuu;s++) {
 						System.out.println(pinfo[s].number);
 						System.out.println(pinfo[s].goku);
