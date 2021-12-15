@@ -1602,10 +1602,10 @@ public class Checker {
 
 					tokensu++;
 				}
-				for(int s=0;s<100000;s++) {
+				for(int s=0;s<10000;s++) {
 					pinfo[s]=new point();
 				}
-				for(int s=0;s<100000;s++) {
+				for(int s=0;s<100;s++) {
 					huku[s]=new hensuse();
 				}
 
