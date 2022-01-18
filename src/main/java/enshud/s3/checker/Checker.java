@@ -1209,7 +1209,7 @@ public class Checker {
 								hyo=l;
 							}
 						}
-						
+
 						int[] c = new int[1024];
 						c=search("karipara",b[j]);
 						for(int k=0;k<1024;k++) {
@@ -1222,7 +1222,7 @@ public class Checker {
 						}
 					}
 				}
-				
+
 				huku[prosu].hensukazu=hensusu+1;
 				prosu++;
 				hensusu=0;
@@ -1548,7 +1548,7 @@ public class Checker {
 
 				}
 				if(sa.equals("boolean")) {
-					
+
 				}
 			}
 		}
@@ -1652,6 +1652,13 @@ public class Checker {
 
 						}
 					}*/
+					Path p = Paths.get("C:/Users/luy07/Documents/enshud/enshud/result.cas");
+
+					try{
+					  Files.createFile(p);
+					}catch(IOException e){
+					  System.out.println(e);
+					}
 				}
 				else {
 					/*for(int s=0;s<pointsuu;s++) {
