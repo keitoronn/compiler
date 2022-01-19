@@ -1693,8 +1693,22 @@ public class Compiler {
 		j=0;
 		int[] sub = new int[1024];
 		if(pinfo[b].ko[1]>0) {
-			
+			cashukuprogramsengengun(pinfo[b].ko[1]);
 		}
+		
+	}
+	void cashukuprogramsengengun(int b) {
+		cashukuprogramsengen(pinfo[b].ko[0]);
+		if(pinfo[b].ko[1]>0) {
+			int j=1;
+			while(pinfo[b].ko[j]>0) {
+				cashukuprogramsengen(pinfo[b].ko[j]);
+				j++;
+			}
+		}
+	}
+	
+	void cashukuprogramsengen(int b) {
 		
 	}
 
