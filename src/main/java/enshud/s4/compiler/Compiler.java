@@ -6,8 +6,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-//import enshud.casl.CaslSimulator;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import enshud.casl.CaslSimulator;
 
 public class Compiler {
 
@@ -17,10 +23,10 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		new Compiler().run("data/ts/normal01.ts", "tmp/out.cas");
+		new Compiler().run("data/ts/normal05.ts", "tmp/out.cas");
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
-		//CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
+		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
 	}
 
 	/**
@@ -63,14 +69,37 @@ public class Compiler {
 		int[] tnum = new int[1024];
 		String[] hyoujun = new String[1024];
 		String[] kata = new String[1024];
+		String[] mojiretusen = new String[1024];
+		String varsen ;
+		int[] bango = new int[1024];
+		int[] yousosu = new int[1024];
+		int[] mojiretunagasa = new int[1024];
 		int hensukazu = 0;
+		int hensumemo =0;
+		int inthensukazu=0;
+		int charhensukazu=0;
+		int boolhensukazu=0;
+		int mojiretukazu=0;
+		int ifkazu=0;
+		int whilekazu=0;
+		int kankeikazu=0;
 		hensuse() {
 			for(int i=0;i<1024;i++) {
 				this.namae[i]="";
 				this.hyoujun[i]="";
+				this.mojiretusen[i]="";
+				this.varsen="";
 				this.hensukazu=0;
+				this.hensumemo=0;
+				this.mojiretukazu=0;
+				this.mojiretunagasa[i]=0;
 				this.tnum[i]=0;
 				this.kata[i]="";
+				this.bango[i]=0;
+				this.yousosu[i]=0;
+				this.ifkazu=0;
+				this.whilekazu=0;
+				this.kankeikazu=0;
 			}
 		}
 	}
@@ -84,15 +113,17 @@ public class Compiler {
 	int pointsuu=0;
 	int chou=0;
 	int prosu=0;
+	int imahuku=0;
 	point[] pinfo = new point[100000];
-	hensuse[] huku = new hensuse[100000];
+	hensuse[] huku = new hensuse[100];
 	String[] hensu =new String[1024];
 	String[] hukuproname = new String[1024];
 	int hukuprosu=0;
 	int hensusu=0;
 	int mojiretukazu=0;
 	String mojiteigi="";
-
+	String inthensumemo="";
+	String cas="";
 	void program() {
 		int a = pointsuu;
 		pinfo[a].teigi = "program";
@@ -937,6 +968,16 @@ public class Compiler {
 		pointsuu++;
 		tanjunsiki(a);
 		if((jiku[n].equals("="))||(jiku[n].equals("<>"))||(jiku[n].equals("<"))||(jiku[n].equals("<="))||(jiku[n].equals(">"))||(jiku[n].equals(">="))) {
+
+			int c = pointsuu;
+			pinfo[c].teigi = "kankeienzansi";
+			pinfo[c].goku = jiku[n];
+			pinfo[c].tnum = n;
+			pinfo[c].number = pointsuu;
+			pinfo[c].kokazu = 0;
+			pinfo[a].ko[pinfo[a].kokazu]=c;
+			pinfo[a].kokazu++;
+			pointsuu++;
 			n++;
 			tanjunsiki(a);
 		}
@@ -954,11 +995,29 @@ public class Compiler {
 		pinfo[b].kokazu++;
 		pointsuu++;
 		if((jiku[n].equals("+"))||(jiku[n].equals("-"))) {
+			int c = pointsuu;
+			pinfo[c].teigi = "hugou";
+			pinfo[c].goku = jiku[n];
+			pinfo[c].tnum = n;
+			pinfo[c].number = pointsuu;
+			pinfo[c].kokazu = 0;
+			pinfo[a].ko[pinfo[a].kokazu]=c;
+			pinfo[a].kokazu++;
+			pointsuu++;
 			n++;
 		}
 		kou(a);
 		if((jiku[n].equals("+"))||(jiku[n].equals("-"))||(jiku[n].equals("or"))) {
 			while(true) {
+				int c = pointsuu;
+				pinfo[c].teigi = "kahouenzansi";
+				pinfo[c].goku = jiku[n];
+				pinfo[c].tnum = n;
+				pinfo[c].number = pointsuu;
+				pinfo[c].kokazu = 0;
+				pinfo[a].ko[pinfo[a].kokazu]=c;
+				pinfo[a].kokazu++;
+				pointsuu++;
 				n++;
 				kou(a);
 				if(!((jiku[n].equals("+"))||(jiku[n].equals("-"))||(jiku[n].equals("or")))) {
@@ -981,6 +1040,16 @@ public class Compiler {
 		insi(a);
 		if((jiku[n].equals("*"))||(jiku[n].equals("/"))||(jiku[n].equals("div"))||(jiku[n].equals("mod"))||(jiku[n].equals("and"))) {
 			while(true) {
+
+				int c = pointsuu;
+				pinfo[c].teigi = "jouhouenzansi";
+				pinfo[c].goku = jiku[n];
+				pinfo[c].tnum = n;
+				pinfo[c].number = pointsuu;
+				pinfo[c].kokazu = 0;
+				pinfo[a].ko[pinfo[a].kokazu]=c;
+				pinfo[a].kokazu++;
+				pointsuu++;
 				n++;
 				insi(a);
 				if(!((jiku[n].equals("*"))||(jiku[n].equals("/"))||(jiku[n].equals("div"))||(jiku[n].equals("mod"))||(jiku[n].equals("and")))) {
@@ -1058,6 +1127,7 @@ public class Compiler {
 
 		}
 	}
+	//
 
 
 	void hensuunonarabi(int b) {
@@ -1177,9 +1247,16 @@ public class Compiler {
 											if(pinfo[v].teigi.equals("kata")) {
 												if(pinfo[pinfo[v].ko[0]].teigi.equals("hairetugata")) {
 													huku[prosu].kata[hensusu]="hairetugata";
+													boolean isNumeric1 =  pinfo[pinfo[pinfo[v].ko[0]].ko[1]].goku.matches("[+-]?\\d*(\\.\\d+)?");
+													boolean isNumeric2 =  pinfo[pinfo[pinfo[v].ko[0]].ko[0]].goku.matches("[+-]?\\d*(\\.\\d+)?");
+													if(isNumeric1&&isNumeric2) {
+														
+														huku[prosu].yousosu[hensusu]= Integer.parseInt(pinfo[pinfo[pinfo[v].ko[0]].ko[1]].goku)-Integer.parseInt(pinfo[pinfo[pinfo[v].ko[0]].ko[0]].goku)+1;
+													}
 												}
 												else {
 													huku[prosu].kata[hensusu]="hyoujungata";
+													huku[prosu].yousosu[hensusu]=1;
 												}
 												break;
 											}
@@ -1580,9 +1657,9 @@ public class Compiler {
 
 
 	void casprogram() {
-		System.out.println("CASL	START	BEGIN	;");
-		System.out.println("BEGIN	LAD	GR6, 0	;");
-		System.out.println("LAD	GR7, LIBBUF	;");
+		cas=cas+"CASL	START	BEGIN	;\n";
+		cas=cas+"BEGIN	LAD	GR6, 0	;\n";
+		cas=cas+"	LAD	GR7, LIBBUF	;\n";
 		int[] a = new int[1024];
 		a=search("block",0);
 		casblock(a[0]);
@@ -1590,21 +1667,29 @@ public class Compiler {
 		int[] b = new int[1024];
 		b=search("complexStatement",0);
 		cascomplexStatement(b[0]);
-		System.out.println("	RET		; ");
-		System.out.println(mojiteigi);
-		System.out.println("LIBBUF	DS	256	; ");
-		System.out.println("	END		; ");
+		cas=cas+"	RET		; \n";
+		if(huku[imahuku].mojiretukazu>0) {
+			for(int i=0;i<huku[imahuku].mojiretukazu;i++) {
+				cas=cas+huku[imahuku].mojiretusen[i]+"\n";
+			}
+		}
+		if(huku[imahuku].hensukazu>0) {
+			cas=cas+huku[imahuku].varsen+"\n";
+		}
+		cas=cas+"LIBBUF	DS	256	; \n";
+		cas=cas+"	END		; ";
 	}
 
 	void casblock(int b) {
 		int[] a = new int[1024];
-		a=search("hensusen",b);
+		a=search("hensusengen",b);
 		int j=0;
 		while(a[j]>0) {
 			cashensusengen(a[j]);
 			j++;
 		}
 	}
+
 
 	void cashensusengen(int b) {
 
@@ -1633,14 +1718,27 @@ public class Compiler {
 					caskihonbun(pinfo[a[j]].ko[0]);
 				}
 			}
-			else if(pinfo[a[j]].teigi.equals("if") ) {
-
+			else if(pinfo[a[j]].goku.equals("if") ) {
+				casif(a[j]);
 			}
 			else {
-
+				caswhile(a[j]);
 			}
 			j++;
 		}
+	}
+	
+	void casif(int b) {
+		int nam=huku[imahuku].ifkazu;
+		System.out.println("A");
+		casdainyusiki(pinfo[b].ko[0]);
+		
+	}
+	
+	void caswhile(int b) {
+		int nam=huku[imahuku].ifkazu;
+		casdainyusiki(pinfo[b].ko[0]);
+		
 	}
 
 	void caskihonbun(int b) {
@@ -1660,6 +1758,138 @@ public class Compiler {
 
 
 	void casdainyuubun(int b) {
+		casdainyusiki(pinfo[b].ko[1]);
+		cassahen(pinfo[b].ko[0]);
+
+	}
+	void cassahen(int b) {
+		cassahenhensu(pinfo[b].ko[0]);
+	}
+
+	void cassahenhensu(int b) {
+		int num=0;
+		for(int i=0;i<huku[imahuku].hensukazu;i++) {
+			if(pinfo[b].goku.equals(huku[imahuku].namae[i])) {
+				num=huku[imahuku].bango[i];
+			}
+		}
+		if(pinfo[b].ko[1]>0) {//左辺が配列の時
+			casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);
+			cas=cas+"	POP	GR2	; assign	var	idx\r\n"
+					+ "	ADDA	GR2, ="+(num-1)+"	; assign	var\r\n"
+					+ "	POP	GR1	; assign\r\n"
+					+ "	ST	GR1, VAR, GR2	; assign\n";
+		}
+		else {
+			if(num==0) {
+				cas=cas+"	LD	GR2, ="+num+"	; assign	var	(i)\n"+"	POP	GR1	; assign\n"+"	ST	GR1, VAR, GR2	; assign\n";
+			}
+		}
+
+
+	}
+
+	void casdainyusiki(int b) {
+		casdainyutanjun(pinfo[b].ko[0]);
+		if(pinfo[b].ko[1]>0) {
+			casdainyutanjun(pinfo[b].ko[2]);
+			caskankei(pinfo[b].ko[1]);
+		}
+	}
+	
+	void caskankei(int b) {
+		if(pinfo[b].goku.equals("<=")) {
+			cas=cas+"	POP	GR2	; while	comp\r\n"
+					+ "	POP	GR1	; while	comp\r\n"
+					+ "	CPA	GR1, GR2	; while	comp\r\n"
+					+ "	JPL	TRUE0	; while	comp	comp-op\r\n"
+					+ "	LD	GR1, =#0000	; while	comp	comp-op\r\n"
+					+ "	JUMP	BOTH0	; while	comp	comp-op\r\n"
+					+ "TRUE"+huku[imahuku].kankeikazu+"	LD	GR1, =#FFFF	; while	comp	comp-op\r\n"
+					+ "BOTH"+huku[imahuku].kankeikazu+"	PUSH	0, GR1	; while	comp	comp-op\n";
+			
+		}
+	}
+
+	void casdainyutanjun(int b) {
+		int[] kou=new int[1024];
+		int[] puramai=new int[1024];
+		int[] hugou=new int[1024];
+		hugou=search("hugou",b);
+		kou=search("kou",b);
+		puramai=search("kahouenzansi",b);
+		casdainyukou(kou[0]);
+		if(puramai[0]>0) {
+			int j=0;
+			while(puramai[j]>0) {
+			casdainyukou(kou[j+1]);
+			casdainyupuramai(puramai[j]);
+			j++;
+			}
+		}
+	}
+	void casdainyupuramai(int b){
+		cas=cas+"	POP	GR2	; assign	addition\n"+"	POP	GR1	; assign	addition\n"+"	ADDA	GR1, GR2	; assign	addition\n"+"	PUSH	0, GR1	; assign	addition\n";
+	}
+
+	void casdainyukou(int b) {
+		casdainyuinsi(pinfo[b].ko[0]);
+		if(pinfo[b].ko[1]>0) {
+			casdainyuinsi(pinfo[b].ko[2]);
+			casdainyukakewari(pinfo[b].ko[1]);
+		}
+	}
+	void casdainyukakewari(int b) {
+
+	}
+
+	void casdainyuinsi(int b) {
+		if(pinfo[pinfo[b].ko[0]].teigi.equals("hensuu")) {
+			casdainyuhensuu(pinfo[b].ko[0]);
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("teisuu")) {
+			casdainyuteisuu(pinfo[b].ko[0]);
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("siki")) {
+			casdainyusiki(pinfo[b].ko[0]);
+		}else {
+
+		}
+	}
+	void casdainyuteisuu(int b) {
+		if(pinfo[pinfo[b].ko[0]].teigi.equals("integer")) {
+			casdainyuinteger(pinfo[b].ko[0]);
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("char")) {
+
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("boolean")) {
+
+		}
+	}
+
+	void casdainyuinteger(int b) {
+		cas=cas+"	PUSH	"+pinfo[b].goku+"\n";
+	}
+
+	void casdainyuhensuu(int b) {
+
+		int num=0;
+		String kata="";
+		for(int i=0;i<huku[imahuku].hensukazu;i++) {
+			if(pinfo[b].goku.equals(huku[imahuku].namae[i])) {
+				num=huku[imahuku].bango[i];
+				kata=huku[imahuku].hyoujun[i];
+			}
+		}
+		if(pinfo[b].ko[1]>0) {//配列の時
+			if(kata.equals("integer")) {
+				casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);/////////////////////////////////////////////////
+			}
+		}else {
+			if(kata.equals("integer")) {
+				cas=cas+"	LD	GR2, ="+num+"	; assign	left	var	(i)\r\n"
+						+ "	LD	GR1, VAR, GR2	; assign	left\r\n"
+						+ "	PUSH	0, GR1	; assign	left\n";
+			}
+		}
+
 
 	}
 
@@ -1669,27 +1899,132 @@ public class Compiler {
 
 	void casnyuusyuturyokubun(int b) {
 		int[] a = new int[1024];
-		saikisearch("char",b,a);
+		if(pinfo[b].goku.equals("writeln")) {
+			cassyuturyokusikinarabi(pinfo[b].ko[0]);
+		}
+
+		cas=cas+"	CALL	WRTLN	; output\n";
+	}
+
+	void cassyuturyokusikinarabi(int b) {
+		int[] a = new int[1024];
+		a=search("siki",b);
 		int j=0;
 		while(a[j]>0) {
-			mojiteigi=mojiteigi+"CHAR"+mojiretukazu+"	"+"DC"+"	"+pinfo[a[j]].goku;
-			mojiretukazu++;
+			cassyuturyokusiki(a[j]);
 			j++;
 		}
-		int nagasa;
-		nagasa=pinfo[pinfo[b].ko[0]].goku.length()-2;
-		if(pinfo[b].goku.equals("writeln")) {
-			System.out.println("	LD	GR1, ="+ nagasa +"	; output	const-str	('test')\r\n"
+
+	}
+
+	void cassyuturyokusiki(int b) {
+		int[] a = new int[1024];
+		a=search("tanjunsiki",b);
+		int j=0;
+		while(a[j]>0) {
+			cassyuturyokutanjunsiki(a[j]);
+			j++;
+		}
+	}
+
+	void cassyuturyokutanjunsiki(int b) {
+		int[] a = new int[1024];
+		a=search("kou",b);
+		int j=0;
+		while(a[j]>0) {
+			cassyuturyokukou(a[j]);
+			j++;
+		}
+
+	}
+	void cassyuturyokukou(int b) {
+		int[] a = new int[1024];
+		a=search("insi",b);
+		int j=0;
+		while(a[j]>0) {
+			cassyuturyokuinsi(a[j]);
+			j++;
+		}
+
+	}
+
+	void cassyuturyokuinsi(int b) {
+		if(pinfo[pinfo[b].ko[0]].teigi.equals("hensuu")) {
+			cassyuturyokuhensuu(pinfo[b].ko[0]);
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("teisuu")) {
+			cassyuturyokuteisuu(pinfo[b].ko[0]);
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("siki")) {
+			cassyuturyokusiki(pinfo[b].ko[0]);
+		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("insi")) {
+			cassyuturyokuinsi(pinfo[b].ko[0]);
+		}
+	}
+	void cassyuturyokuteisuu(int b){
+		if(pinfo[pinfo[b].ko[0]].teigi.equals("char")) {
+			huku[imahuku].mojiretusen[huku[imahuku].mojiretukazu]="CHAR"+mojiretukazu+"	"+"DC"+"	"+pinfo[pinfo[b].ko[0]].goku;
+			huku[imahuku].mojiretunagasa[huku[imahuku].mojiretukazu]=pinfo[b].goku.length()-2;;
+			huku[imahuku].mojiretukazu++;
+
+
+			cas=cas+"	LD	GR1, ="+ huku[imahuku].mojiretunagasa[0] +"	; output	const-str	('test')\r\n"
 					+ "	PUSH	0, GR1	; output	const-str\r\n"
 					+ "	LAD	GR2, CHAR0	; output	const-str\r\n"
 					+ "	PUSH	0, GR2	; output	const-str\r\n"
 					+ "	POP	GR2	; output\r\n"
 					+ "	POP	GR1	; output\r\n"
-					+ "	CALL	WRTSTR	; output\r\n"
-					+ "	CALL	WRTLN	; output");
+					+ "	CALL	WRTSTR	; output\r\n";
 
 		}
+
 	}
+
+	void cassyuturyokuhensuu(int b){
+		int num=0;
+		String kata="";
+		for(int i=0;i<huku[imahuku].hensukazu;i++) {
+			if(pinfo[b].goku.equals(huku[imahuku].namae[i])) {
+				num=huku[imahuku].bango[i];
+				kata=huku[imahuku].hyoujun[i];
+			}
+		}
+		if(pinfo[b].ko[1]>0) {//配列の時
+			if(kata.equals("integer")) {
+				casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);
+				cas=cas+"	POP	GR2	; assign	var	idx\r\n"
+						+ "	ADDA	GR2, ="+(num-1)+"	; assign	var\r\n"
+						+ "	LD	GR1, VAR, GR2	; output	left\r\n"
+						+ "	PUSH	0, GR1	; output	left\r\n"
+						+ "	POP	GR2	; output\r\n"
+						+ "	CALL	WRTINT	; output\n";
+			}
+		}else {
+			if(kata.equals("integer")) {
+				cas=cas+"	LD	GR2, ="+num+"	; output	left	var	"+pinfo[b].goku+"\r\n"
+						+ "	LD	GR1, VAR, GR2	; output	left\r\n"
+						+ "	PUSH	0, GR1	; output	left\r\n"
+						+ "	POP	GR2	; output\r\n"
+						+ "	CALL	WRTINT	; output\n";
+			}
+		}
+	}
+
+
+
+
+	void memo() {
+
+		for(int i=0;i<prosu;i++) {
+			for(int j=0;j<huku[i].hensukazu;j++) {
+				for(int k=0;k<j;k++) {
+					huku[i].bango[j]=huku[i].bango[j]+huku[i].yousosu[k];
+
+				}
+				huku[i].hensumemo=huku[i].bango[j]+huku[i].yousosu[j];
+			}
+			huku[i].varsen="VAR	DS	"+huku[i].hensumemo;
+		}
+	}
+
 
 
 
@@ -1733,11 +2068,13 @@ public class Compiler {
 				hienzancheck();
 				dainyucheck();
 				tetudukicheck();
+				memo();
 				/*for(int i=0;i<prosu;i++) {
 					for(int j=0;j<huku[i].hensukazu;j++) {
 						System.out.println(huku[i].namae[j]);
 						System.out.println(huku[i].hyoujun[j]);
 						System.out.println(huku[i].kata[j]);
+						System.out.println(huku[i].yousosu[j]);
 
 					}
 				}*/
@@ -1762,19 +2099,326 @@ public class Compiler {
 							System.out.println(huku[i].namae[j]);
 							System.out.println(huku[i].hyoujun[j]);
 							System.out.println(huku[i].kata[j]);
+							System.out.println(huku[i].yousosu[j]);
+							System.out.println(huku[i].bango[j]);
+
+
 
 						}
 					}
-					Path p = Paths.get( outputFileName);
+					Path p = Paths.get(outputFileName);
 
-					if(!Files.exists(p)){
-						try{
-							Files.createFile(p);
-						}catch(IOException e){
-							System.err.println(e);
-						}
-					}
+
 					casprogram();
+					System.out.println(cas);
+					try {
+						// FileWriterクラスのオブジェクトを生成する
+						FileWriter file = new FileWriter(outputFileName);
+						// PrintWriterクラスのオブジェクトを生成する
+						PrintWriter pw = new PrintWriter(new BufferedWriter(file));
+						cas=cas+"; lib.cas\r\n"
+								+ ";============================================================\r\n"
+								+ "; MULT: 掛け算を行うサブルーチン\r\n"
+								+ "; GR1 * GR2 -> GR2\r\n"
+								+ "MULT	START\r\n"
+								+ "	PUSH	0,GR1	; GR1の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR3	; GR3の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR4	; GR4の内容をスタックに退避\r\n"
+								+ "	LAD	GR3,0	; GR3を初期化\r\n"
+								+ "	LD	GR4,GR2\r\n"
+								+ "	JPL	LOOP\r\n"
+								+ "	XOR	GR4,=#FFFF\r\n"
+								+ "	ADDA	GR4,=1\r\n"
+								+ "LOOP	SRL	GR4,1\r\n"
+								+ "	JOV	ONE\r\n"
+								+ "	JUMP	ZERO\r\n"
+								+ "ONE	ADDL	GR3,GR1\r\n"
+								+ "ZERO	SLL	GR1,1\r\n"
+								+ "	AND	GR4,GR4\r\n"
+								+ "	JNZ	LOOP\r\n"
+								+ "	CPA	GR2,=0\r\n"
+								+ "	JPL	END\r\n"
+								+ "	XOR	GR3,=#FFFF\r\n"
+								+ "	ADDA	GR3,=1\r\n"
+								+ "END	LD	GR2,GR3\r\n"
+								+ "	POP	GR4\r\n"
+								+ "	POP	GR3\r\n"
+								+ "	POP	GR1\r\n"
+								+ "	RET\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; DIV 割り算を行うサブルーチン\r\n"
+								+ "; GR1 / GR2 -> 商は GR2, 余りは GR1\r\n"
+								+ "DIV	START\r\n"
+								+ "	PUSH	0,GR3\r\n"
+								+ "	ST	GR1,A\r\n"
+								+ "	ST	GR2,B\r\n"
+								+ "	CPA	GR1,=0\r\n"
+								+ "	JPL	SKIPA\r\n"
+								+ "	XOR	GR1,=#FFFF\r\n"
+								+ "	ADDA	GR1,=1\r\n"
+								+ "SKIPA	CPA	GR2,=0\r\n"
+								+ "	JZE	SKIPD\r\n"
+								+ "	JPL	SKIPB\r\n"
+								+ "	XOR	GR2,=#FFFF\r\n"
+								+ "	ADDA	GR2,=1\r\n"
+								+ "SKIPB	LD	GR3,=0\r\n"
+								+ "LOOP	CPA	GR1,GR2\r\n"
+								+ "	JMI	STEP\r\n"
+								+ "	SUBA	GR1,GR2\r\n"
+								+ "	LAD	GR3,1,GR3\r\n"
+								+ "	JUMP	LOOP\r\n"
+								+ "STEP	LD	GR2,GR3\r\n"
+								+ "	LD	GR3,A\r\n"
+								+ "	CPA	GR3,=0\r\n"
+								+ "	JPL	SKIPC\r\n"
+								+ "	XOR	GR1,=#FFFF\r\n"
+								+ "	ADDA	GR1,=1\r\n"
+								+ "SKIPC	XOR	GR3,B\r\n"
+								+ "	CPA	GR3,=0\r\n"
+								+ "	JZE	SKIPD\r\n"
+								+ "	JPL	SKIPD\r\n"
+								+ "	XOR	GR2,=#FFFF\r\n"
+								+ "	ADDA	GR2,=1\r\n"
+								+ "SKIPD	POP	GR3\r\n"
+								+ "	RET\r\n"
+								+ "A	DS	1\r\n"
+								+ "B	DS	1\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; 入力装置から数値データを読み込み，\r\n"
+								+ "; その内容をGR2が指すアドレスに格納するサブルーチン\r\n"
+								+ "RDINT	START\r\n"
+								+ "	PUSH	0,GR1	; GR1の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR3	; GR3の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR4	; GR4の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR5	; GR5の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR6	; GR6の内容をスタックに退避\r\n"
+								+ "	LD	GR5,GR2	; GR2が指す番地をGR5にコピー\r\n"
+								+ "	LD	GR2,=0	; GR2を初期化\r\n"
+								+ "	LD	GR3,=0	; GR3を初期化\r\n"
+								+ "	IN	INAREA,INLEN	; 入力を受け取る\r\n"
+								+ "	; 入力がnullかどうかのチェック\r\n"
+								+ "	CPA	GR3,INLEN\r\n"
+								+ "	JZE	ERROR\r\n"
+								+ "	; 最初の文字が'-'かどうかのチェック\r\n"
+								+ "	LD	GR4,INAREA,GR3\r\n"
+								+ "	LAD	GR3,1,GR3\r\n"
+								+ "	LD	GR6,GR4	; GR6に入力された先頭の文字を保存\r\n"
+								+ "	CPL	GR4,=#002D	; '-'かどうか\r\n"
+								+ "	JZE	LOOP\r\n"
+								+ "	CPL	GR4,='0'	; 数値かどうかのチェック\r\n"
+								+ "	JMI	ERROR\r\n"
+								+ "	CPL	GR4,='9'\r\n"
+								+ "	JPL	ERROR\r\n"
+								+ "	XOR	GR4,=#0030	; 数値だったら変換\r\n"
+								+ "	ADDA	GR2,GR4\r\n"
+								+ "	; 「すでに読み込んだ数値を10倍して，新しく読み込んだ数値と足す」を繰り返す\r\n"
+								+ "LOOP	CPA	GR3,INLEN\r\n"
+								+ "	JZE	CODE	; 入力された文字数とGR3が同じであればループを抜ける\r\n"
+								+ "	LD	GR1,=10\r\n"
+								+ "	CALL	MULT	; GR2の値を10倍する\r\n"
+								+ "	LD	GR4,INAREA,GR3\r\n"
+								+ "	CPL	GR4,='0'	; 数値かどうかのチェック\r\n"
+								+ "	JMI	ERROR\r\n"
+								+ "	CPL	GR4,='9'\r\n"
+								+ "	JPL	ERROR\r\n"
+								+ "	XOR	GR4,=#0030	; GR4の内容を数値に変換\r\n"
+								+ "	ADDA	GR2,GR4	; GR2にGR1の内容を足す\r\n"
+								+ "	LAD	GR3,1,GR3	; GR3(ポインタ)をインクリメント\r\n"
+								+ "	JUMP	LOOP\r\n"
+								+ "	; 最初の文字が'-'であった場合は-1倍する\r\n"
+								+ "CODE	CPL	GR6,=#002D\r\n"
+								+ "	JNZ	END\r\n"
+								+ "	XOR	GR2,=#FFFF\r\n"
+								+ "	LAD	GR2,1,GR2\r\n"
+								+ "	JUMP	END\r\n"
+								+ "	; エラーを出力する\r\n"
+								+ "ERROR	OUT	ERRSTR,ERRLEN\r\n"
+								+ "END	ST	GR2,0,GR5	; GR2の内容をGR5が指す番地に格納する\r\n"
+								+ "	LD	GR2,GR5	; GR5が指す番地をGR2に戻す\r\n"
+								+ "	POP	GR6\r\n"
+								+ "	POP	GR5\r\n"
+								+ "	POP	GR4\r\n"
+								+ "	POP	GR3\r\n"
+								+ "	POP	GR1\r\n"
+								+ "	RET\r\n"
+								+ "ERRSTR	DC	'illegal input'\r\n"
+								+ "ERRLEN	DC	13\r\n"
+								+ "INAREA	DS	6\r\n"
+								+ "INLEN	DS	1\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; 入力装置から文字を読み込み，\r\n"
+								+ "; その内容をGR2が指すアドレスに格納するサブルーチン\r\n"
+								+ "RDCH	START\r\n"
+								+ "	IN	INCHAR,INLEN\r\n"
+								+ "	LD	GR1,INCHAR\r\n"
+								+ "	ST	GR1,0,GR2\r\n"
+								+ "	RET\r\n"
+								+ "INCHAR	DS	1\r\n"
+								+ "INLEN	DS	1\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; 入力装置から，GR1の文字数を読み込む．\r\n"
+								+ "; 読み込んだ文字列は，GR2 が指すアドレスから順に格納される\r\n"
+								+ "RDSTR	START\r\n"
+								+ "	PUSH	0,GR3	; GR3の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR4	; GR4の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR5	; GR5の内容をスタックに退避\r\n"
+								+ "	LAD	GR4,0	; GR4を初期化\r\n"
+								+ "	IN	INSTR,INLEN\r\n"
+								+ "LOOP	CPA	GR4,GR1\r\n"
+								+ "	JZE	END	; GR1で指定された文字数を超えたら終わり\r\n"
+								+ "	CPA	GR4,INLEN\r\n"
+								+ "	JZE	END	; 入力された文字数を超えたら終わり\r\n"
+								+ "	LD	GR5,GR2\r\n"
+								+ "	ADDA	GR5,GR4	; 文字の格納先番地を計算\r\n"
+								+ "	LD	GR3,INSTR,GR4\r\n"
+								+ "	ST	GR3,0,GR5\r\n"
+								+ "	LAD	GR4,1,GR4\r\n"
+								+ "	JUMP	LOOP\r\n"
+								+ "END	POP	GR5\r\n"
+								+ "	POP	GR4\r\n"
+								+ "	POP	GR3\r\n"
+								+ "	RET\r\n"
+								+ "INSTR	DS	256\r\n"
+								+ "INLEN	DS	1\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; 入力装置からの文字列を改行まで読み飛ばすサブルーチン\r\n"
+								+ "RDLN	START\r\n"
+								+ "	IN	INAREA,INLEN\r\n"
+								+ "	RET\r\n"
+								+ "INAREA	DS	256\r\n"
+								+ "INLEN	DS	1\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; GR2の内容（数値データ）を出力装置に書き出すサブルーチン\r\n"
+								+ "; このサブルーチンが呼ばれたとき，\r\n"
+								+ "; GR7には，出力用番地の先頭アドレスが，\r\n"
+								+ "; GR6には，現在出力用番地に入っている文字数が，\r\n"
+								+ "; それぞれ格納されている．\r\n"
+								+ "WRTINT	START\r\n"
+								+ "	PUSH	0,GR1	; GR1の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR2	; GR2の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR3	; GR3の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR2	; 数値データをもう一度スタックに退避\r\n"
+								+ "	LD	GR3,=0	; GR3はインデックスとして用いる\r\n"
+								+ "	; 数値データが負数である場合は，正の数に変換\r\n"
+								+ "	CPA	GR2,=0\r\n"
+								+ "	JPL	LOOP1\r\n"
+								+ "	XOR	GR2,=#FFFF\r\n"
+								+ "	ADDA	GR2,=1\r\n"
+								+ "	; 数値データを変換しながら，バッファに格納\r\n"
+								+ "LOOP1	LD	GR1,GR2\r\n"
+								+ "	LD	GR2,=10\r\n"
+								+ "	CALL	DIV\r\n"
+								+ "	XOR	GR1,=#0030\r\n"
+								+ "	ST	GR1,BUFFER,GR3\r\n"
+								+ "	LAD	GR3,1,GR3\r\n"
+								+ "	CPA	GR2,=0\r\n"
+								+ "	JNZ	LOOP1\r\n"
+								+ "	; 数値データが負数であれば，'-'を追加\r\n"
+								+ "	POP	GR2\r\n"
+								+ "	CPA	GR2,=0\r\n"
+								+ "	JZE	LOOP2\r\n"
+								+ "	JPL	LOOP2\r\n"
+								+ "	LD	GR1,='-'\r\n"
+								+ "	ST	GR1,BUFFER,GR3\r\n"
+								+ "	LAD	GR3,1,GR3\r\n"
+								+ "	; BUFFERを逆順にたどりながら，出力用バッファに格納\r\n"
+								+ "LOOP2	LAD	GR3,-1,GR3\r\n"
+								+ "	LD	GR1,BUFFER,GR3\r\n"
+								+ "	LD	GR2,GR7\r\n"
+								+ "	ADDA	GR2,GR6\r\n"
+								+ "	ST	GR1,0,GR2\r\n"
+								+ "	LAD	GR6,1,GR6\r\n"
+								+ "	CPA	GR3,=0\r\n"
+								+ "	JNZ	LOOP2\r\n"
+								+ "END	POP	GR3\r\n"
+								+ "	POP	GR2\r\n"
+								+ "	POP	GR1\r\n"
+								+ "	RET\r\n"
+								+ "BUFFER	DS	6\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; GR2の内容（文字）を出力装置に書き出すサブルーチン\r\n"
+								+ "; このサブルーチンが呼ばれたとき，\r\n"
+								+ "; GR7には，出力用番地の先頭アドレスが，\r\n"
+								+ "; GR6には，現在出力用番地に入っている文字数が，\r\n"
+								+ "; それぞれ格納されている．\r\n"
+								+ "WRTCH	START\r\n"
+								+ "	PUSH	0,GR1	; GR1の内容をスタックに退避\r\n"
+								+ "	LD	GR1,GR7\r\n"
+								+ "	ADDA	GR1,GR6	; GR1に次の文字を格納する番地を代入\r\n"
+								+ "	ST	GR2,0,GR1\r\n"
+								+ "	LAD	GR6,1,GR6\r\n"
+								+ "	POP	GR1\r\n"
+								+ "	RET\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; GR2の指すメモリ番地から，長さGR1の文字列を出力装置に書き出すサブルーチン\r\n"
+								+ "; このサブルーチンが呼ばれたとき，\r\n"
+								+ "; GR7には，出力用番地の先頭アドレスが，\r\n"
+								+ "; GR6には，現在出力用番地に入っている文字数が，\r\n"
+								+ "; それぞれ格納されている．\r\n"
+								+ "WRTSTR	START\r\n"
+								+ "	PUSH	0,GR3	; GR3の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR4	; GR4の内容をスタックに退避\r\n"
+								+ "	PUSH	0,GR5	; GR5の内容をスタックに退避\r\n"
+								+ "	LAD	GR3,0	; GR3は制御変数として用いる\r\n"
+								+ "LOOP	CPA	GR3,GR1\r\n"
+								+ "	JZE	END\r\n"
+								+ "	LD	GR4,GR2\r\n"
+								+ "	ADDA	GR4,GR3	; 出力する文字の格納番地を計算\r\n"
+								+ "	LD	GR5,0,GR4	; 出力する文字をレジスタにコピー\r\n"
+								+ "	LD	GR4,GR7\r\n"
+								+ "	ADDA	GR4,GR6	; 出力先の番地を計算\r\n"
+								+ "	ST	GR5,0,GR4	; 出力装置に書き出し\r\n"
+								+ "	LAD	GR3,1,GR3\r\n"
+								+ "	LAD	GR6,1,GR6\r\n"
+								+ "	JUMP	LOOP\r\n"
+								+ "END	POP	GR5\r\n"
+								+ "	POP	GR4\r\n"
+								+ "	POP	GR3\r\n"
+								+ "	RET\r\n"
+								+ "	END\r\n"
+								+ ";============================================================\r\n"
+								+ "; 改行を出力装置に書き出すサブルーチン\r\n"
+								+ "; 実質的には，GR7で始まるアドレス番地から長さGR6の文字列を出力する\r\n"
+								+ "WRTLN	START\r\n"
+								+ "	PUSH	0,GR1\r\n"
+								+ "	PUSH	0,GR2\r\n"
+								+ "	PUSH	0,GR3\r\n"
+								+ "	ST	GR6,OUTLEN\r\n"
+								+ "	LAD	GR1,0\r\n"
+								+ "LOOP	CPA	GR1,OUTLEN\r\n"
+								+ "	JZE	END\r\n"
+								+ "	LD	GR2,GR7\r\n"
+								+ "	ADDA	GR2,GR1\r\n"
+								+ "	LD	GR3,0,GR2\r\n"
+								+ "	ST	GR3,OUTSTR,GR1\r\n"
+								+ "	LAD	GR1,1,GR1\r\n"
+								+ "	JUMP	LOOP\r\n"
+								+ "END	OUT	OUTSTR,OUTLEN\r\n"
+								+ "	LAD	GR6,0	; 文字列を出力して，GR6を初期化\r\n"
+								+ "	POP	GR3\r\n"
+								+ "	POP	GR2\r\n"
+								+ "	POP	GR1\r\n"
+								+ "	RET\r\n"
+								+ "OUTSTR	DS	256\r\n"
+								+ "OUTLEN	DS	1\r\n"
+								+ "	END\r\n";
+
+						//ファイルに書き込む
+						pw.println(cas);
+
+						//ファイルを閉じる
+						pw.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 
 				}
 				else {
