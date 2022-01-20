@@ -1,18 +1,15 @@
 package enshud.s4.compiler;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import enshud.casl.CaslSimulator;
 
 public class Compiler {
@@ -23,7 +20,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		new Compiler().run("data/ts/normal08.ts", "tmp/out.cas");
+		new Compiler().run("data/ts/normal13.ts", "tmp/out.cas");
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -70,6 +67,7 @@ public class Compiler {
 		String[] hyoujun = new String[1024];
 		String[] kata = new String[1024];
 		String[] mojiretusen = new String[1024];
+		String[] kari=new String[1024];
 		String varsen ;
 		int[] bango = new int[1024];
 		int[] yousosu = new int[1024];
@@ -93,6 +91,7 @@ public class Compiler {
 				this.hensukazu=0;
 				this.hensumemo=0;
 				this.mojiretukazu=0;
+				this.kari[i]="";
 				this.mojiretunagasa[i]=0;
 				this.tnum[i]=0;
 				this.kata[i]="";
@@ -109,6 +108,9 @@ public class Compiler {
 	String[] tokenname = new String[2048];
 	int[] tokenID = new int[2048];
 	int[] gyou = new int[2048];
+	int ifkazu=0;
+	int whilekazu=0;
+	int kankeikazu;
 	int n=0;
 	int err=0;
 	int tokensu=0;
@@ -120,12 +122,16 @@ public class Compiler {
 	hensuse[] huku = new hensuse[100];
 	String[] hensu =new String[1024];
 	String[] hukuproname = new String[1024];
+	String varsen="";
 	int hukuprosu=0;
 	int hensusu=0;
 	int mojiretukazu=0;
 	String mojiteigi="";
 	String inthensumemo="";
 	String cas="";
+	String[] mojiretusen =new String[1024];
+	int[] hukuprostuck= new int[256];
+	int[] mojiretunagasa = new int[1024];
 	void program() {
 		int a = pointsuu;
 		pinfo[a].teigi = "program";
@@ -1274,33 +1280,100 @@ public class Compiler {
 				huku[prosu].hensukazu=hensusu+1;
 				prosu++;
 				hensusu=0;
+				break;
 			}
 		}
-	}
-	void kariparamemory() {
-		int[] a = new int[1024];
-		saikisearch("kariparameterorder",0,a);
-		for(int i=0;i<1024;i++) {
-			if(a[i]>0) {
-				int[] b = new int[1024];
-				b=search("kariparameternameorder",a[i]);
-				for(int j=0;j<1024;j++) {
-					if(b[j]>0) {
-						int hyo=0;
-						for(int l=b[j]; l<1024;l++) {
-							if(pinfo[l].teigi.equals("hyoujungata")) {
-								hyo=l;
+		int[] a= new int[1024];
+		saikisearch("hukuprogramsengen",0,a);
+		if(a[0]>0) {
+			int i=0;
+			while(a[i]>0) {
+				int[] c= new int[1024];
+				c=search("hukuprogramtoubu",a[i]);
+				if(c[0]>0) {
+					int h=0;
+					while(c[h]>0) {
+						int[] e= new int[1024];
+						saikisearch("kariparameterorder",c[h],e);
+						if(e[0]>0) {
+							int g=0;
+							while(e[g]>0) {
+								int[] namnam=new int[1024];
+								namnam=search("kariparameternameorder",e[g]);
+								int[] hyojun=new int[1024];
+								hyojun=search("hyoujungata",e[g]);
+								int v=0;
+								if(namnam[0]>0) {
+									while(namnam[v]>0) {
+										int[] kari=search("karipara",namnam[v]);
+										int w=0;
+										while(kari[w]>0) {
+											huku[prosu].namae[hensusu]=pinfo[kari[w]].goku;
+											huku[prosu].tnum[hensusu]=pinfo[kari[w]].tnum;
+											huku[prosu].hyoujun[hensusu]=pinfo[hyojun[v]].goku;
+											huku[prosu].kari[hensusu]="kari";
+											huku[prosu].kata[hensusu]="hyoujungata";
+											huku[prosu].yousosu[hensusu]=1;
+											hensusu++;
+											w++;
+										}
+										v++;
+									}
+								}
+								g++;
 							}
 						}
+						h++;
+					}
+				}
+				int[] d=new int[1024];
+				c=search("hensusengen",a[i]);
+				int x =c[0];
+				for(int s=0;s<pinfo[x].kokazu;s++) {
+					if(pinfo[pinfo[x].ko[s]].teigi.equals("hensusengennarabi")) {
+						for(int t=0;t<pinfo[pinfo[x].ko[s]].kokazu;t++) {
+							if(pinfo[pinfo[pinfo[x].ko[s]].ko[t]].teigi.equals("hensuumeinarabi")) {
+								for(int u=0;u<pinfo[pinfo[pinfo[x].ko[s]].ko[t]].kokazu;u++) {
+									if(hensusu>1) {
+										for(int v=0;v<hensusu;v++) {
+											if(err==0&&pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].goku.equals(huku[prosu].namae[v])&&(chou==0)) {
+												System.err.println("Semantic error: line "+gyou[pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum]);
+												chou++;
+												err++;
+											}
+										}
+									}
+									if(chou==0) {
+										huku[prosu].namae[hensusu]=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].goku;
+										huku[prosu].tnum[hensusu]=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].tnum;
+										for(int v=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].number;v<pointsuu;v++) {
+											if(pinfo[v].teigi.equals("hyoujungata")) {
+												huku[prosu].hyoujun[hensusu]=pinfo[v].goku;
+												break;
+											}
+										}
+										for(int v=pinfo[pinfo[pinfo[pinfo[x].ko[s]].ko[t]].ko[u]].number;v<pointsuu;v++) {
+											if(pinfo[v].teigi.equals("kata")) {
+												if(pinfo[pinfo[v].ko[0]].teigi.equals("hairetugata")) {
+													huku[prosu].kata[hensusu]="hairetugata";
+													boolean isNumeric1 =  pinfo[pinfo[pinfo[v].ko[0]].ko[1]].goku.matches("[+-]?\\d*(\\.\\d+)?");
+													boolean isNumeric2 =  pinfo[pinfo[pinfo[v].ko[0]].ko[0]].goku.matches("[+-]?\\d*(\\.\\d+)?");
+													if(isNumeric1&&isNumeric2) {
 
-						int[] c = new int[1024];
-						c=search("karipara",b[j]);
-						for(int k=0;k<1024;k++) {
-							if(c[k]>0) {
-								huku[prosu].namae[hensusu]=pinfo[c[k]].goku;
-								huku[prosu].tnum[hensusu]=pinfo[c[k]].tnum;
-								huku[prosu].hyoujun[hensusu]=pinfo[hyo].goku;
-								hensusu++;
+														huku[prosu].yousosu[hensusu]= Integer.parseInt(pinfo[pinfo[pinfo[v].ko[0]].ko[1]].goku)-Integer.parseInt(pinfo[pinfo[pinfo[v].ko[0]].ko[0]].goku)+1;
+													}
+												}
+												else {
+													huku[prosu].kata[hensusu]="hyoujungata";
+													huku[prosu].yousosu[hensusu]=1;
+												}
+												break;
+											}
+										}
+										hensusu++;
+									}
+
+								}
 							}
 						}
 					}
@@ -1309,8 +1382,56 @@ public class Compiler {
 				huku[prosu].hensukazu=hensusu+1;
 				prosu++;
 				hensusu=0;
+				i++;
 			}
+
 		}
+
+	}
+	void kariparamemory() {
+		/*	int[] pro = new int[1024];
+		saikisearch("kariparameter",0,pro);
+		int m=0;
+		while(pro[m]>0) {
+			int[] a = new int[1024];
+			saikisearch("kariparameterorder",pro[m],a);
+			for(int i=0;i<1024;i++) {
+				if(a[i]>0) {
+					int[] b = new int[1024];
+					b=search("kariparameternameorder",a[i]);
+					for(int j=0;j<1024;j++) {
+						if(b[j]>0) {
+							int hyo=0;
+							for(int l=b[j]; l<1024;l++) {
+								if(pinfo[l].teigi.equals("hyoujungata")) {
+									hyo=l;
+								}
+							}
+
+							int[] c = new int[1024];
+							c=search("karipara",b[j]);
+							for(int k=0;k<1024;k++) {
+								if(c[k]>0) {
+
+									System.out.println("A"+m);
+									huku[m+1].namae[huku[m+1].hensukazu]=pinfo[c[k]].goku;
+									huku[m+1].tnum[huku[m+1].hensukazu]=pinfo[c[k]].tnum;
+									huku[m+1].hyoujun[huku[m+1].hensukazu]=pinfo[hyo].goku;
+									huku[m+1].yousosu[huku[m+1].hensukazu]=1;
+									huku[m+1].hensukazu++;
+									hensusu++;
+								}
+							}
+						}
+					}
+
+					prosu++;
+					hensusu=0;
+				}
+			}
+			m++;
+		}
+		 */
 	}
 
 	int[] search(String tan,int n) {
@@ -1670,13 +1791,13 @@ public class Compiler {
 		cascomplexStatement(b[0]);
 		cas=cas+"	RET		; \n";
 		casblock(a[0]);
-		if(huku[imahuku].mojiretukazu>0) {
-			for(int i=0;i<huku[imahuku].mojiretukazu;i++) {
-				cas=cas+huku[imahuku].mojiretusen[i]+"\n";
+		if(mojiretukazu>0) {
+			for(int i=0;i<mojiretukazu;i++) {
+				cas=cas+mojiretusen[i]+"\n";
 			}
 		}
-		if(huku[imahuku].hensukazu>0) {
-			cas=cas+huku[imahuku].varsen+"\n";
+		if(huku[0].hensukazu>0) {
+			cas=cas+varsen+"\n";
 		}
 		cas=cas+"LIBBUF	DS	256	; \n";
 		cas=cas+"	END		; ";
@@ -1695,21 +1816,64 @@ public class Compiler {
 		if(pinfo[b].ko[1]>0) {
 			cashukuprogramsengengun(pinfo[b].ko[1]);
 		}
-		
+
 	}
 	void cashukuprogramsengengun(int b) {
-		cashukuprogramsengen(pinfo[b].ko[0]);
-		if(pinfo[b].ko[1]>0) {
-			int j=1;
+		if(pinfo[b].ko[0]>0) {
+			int j=0;
 			while(pinfo[b].ko[j]>0) {
-				cashukuprogramsengen(pinfo[b].ko[j]);
+				for(int i=0;i<256;i++) {
+					if(hukuprostuck[i]!=-1) {
+						hukuprostuck[i]=imahuku;
+						imahuku=j+1;
+						break;
+					}
+				}
+				cashukuprogramsengen(pinfo[b].ko[j],j);
+				for(int i=255;i>0;i++) {
+					if(hukuprostuck[i]!=-1) {
+						imahuku=hukuprostuck[i];
+						hukuprostuck[i]=-1;
+
+						break;
+					}
+				}
 				j++;
 			}
 		}
 	}
-	
-	void cashukuprogramsengen(int b) {
-		
+
+	void cashukuprogramsengen(int b,int proban) {
+		int num=0;
+		int[] karimem= new int[1024];
+		for(int i=0;i<huku[proban+1].hensukazu;i++) {
+			if(huku[proban+1].kari[i].equals("kari")) {
+				karimem[num]=huku[proban+1].bango[i];
+				num++;
+
+			}
+		}
+
+		cas=cas+"PROC"+proban+"	NOP		; proc\r\n"
+				+ "	LD	GR1, GR8	; proc	local-var\r\n";
+
+		if(num>0) {
+			for(int i=0;i<num;i++) {
+				cas=cas+"	ADDA	GR1, ="+(i+1)+"	; proc	local-var\r\n"
+						+ "	LD	GR2, 0, GR1	; proc	fparam	(x)\r\n"
+						+ "	LD	GR3, ="+karimem[i]+"	; proc	fparam	(x)\r\n"
+						+ "	ST	GR2, VAR, GR3	; proc	fparam	(x)\r\n"
+						+ "	SUBA	GR1, ="+(i+1)+"	; proc	fparam	(x)\n";
+			}
+			cas=cas+"	LD	GR1, 0, GR8	; proc	fparam\r\n"
+					+ "	ADDA	GR8, ="+num+"	; proc	fparam\r\n"
+					+ "	ST	GR1, 0, GR8	; proc	fparam\n";
+		}else {
+			cas=cas+ "	ADDA	GR1, ="+num+"	; proc	local-var\n";
+		}
+
+		cascomplexStatement(pinfo[b].ko[2]);
+		cas=cas+"	RET		; proc\n";
 	}
 
 
@@ -1751,8 +1915,8 @@ public class Compiler {
 	}
 
 	void casif(int b) {
-		int nam=huku[imahuku].ifkazu;
-		huku[imahuku].ifkazu++;
+		int nam=ifkazu;
+		ifkazu++;
 		casdainyusiki(pinfo[b].ko[0]);
 		cas=cas+"	POP	GR1	; if\r\n"
 				+ "	CPA	GR1, =#FFFF	; if\r\n"
@@ -1771,8 +1935,8 @@ public class Compiler {
 	}
 
 	void caswhile(int b) {
-		int nam=huku[imahuku].whilekazu;
-		huku[imahuku].whilekazu++;
+		int nam=whilekazu;
+		whilekazu++;
 		cas=cas+"LOOP"+nam+"	NOP		; while\n";
 		casdainyusiki(pinfo[b].ko[0]);
 		cas=cas+"	POP	GR1	; while\r\n"
@@ -1821,15 +1985,14 @@ public class Compiler {
 		}
 		if(pinfo[b].ko[1]>0) {//左辺が配列の時
 			casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);
-			cas=cas+"	POP	GR2	; assign	var	idx\r\n"
+			cas=cas+"	POP	GR2	; assign	var	"+pinfo[b].goku+"idx\r\n"
 					+ "	ADDA	GR2, ="+(num-1)+"	; assign	var\r\n"
 					+ "	POP	GR1	; assign\r\n"
 					+ "	ST	GR1, VAR, GR2	; assign\n";
 		}
 		else {
-			if(num==0) {
-				cas=cas+"	LD	GR2, ="+num+"	; assign	var	(i)\n"+"	POP	GR1	; assign\n"+"	ST	GR1, VAR, GR2	; assign\n";
-			}
+			cas=cas+"	LD	GR2, ="+num+"	; assign	var	("+pinfo[b].goku+")\n"+"	POP	GR1	; assign\n"+"	ST	GR1, VAR, GR2	; assign\n";
+
 		}
 
 
@@ -1848,23 +2011,63 @@ public class Compiler {
 			cas=cas+"	POP	GR2	; while	comp\r\n"
 					+ "	POP	GR1	; while	comp\r\n"
 					+ "	CPA	GR1, GR2	; while	comp\r\n"
-					+ "	JPL	TRUE0	; while	comp	comp-op\r\n"
+					+ "	JPL	TRUE"+kankeikazu+"	; while	comp	comp-op\r\n"
 					+ "	LD	GR1, =#0000	; while	comp	comp-op\r\n"
-					+ "	JUMP	BOTH"+huku[imahuku].kankeikazu+"	; while	comp	comp-op\r\n"
-					+ "TRUE"+huku[imahuku].kankeikazu+"	LD	GR1, =#FFFF	; while	comp	comp-op\r\n"
-					+ "BOTH"+huku[imahuku].kankeikazu+"	PUSH	0, GR1	; while	comp	comp-op\n";
+					+ "	JUMP	BOTH"+kankeikazu+"	; while	comp	comp-op\r\n"
+					+ "TRUE"+kankeikazu+"	LD	GR1, =#FFFF	; while	comp	comp-op\r\n"
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; while	comp	comp-op\n";
 
 		}else if(pinfo[b].goku.equals("=")) {
 			cas=cas+"	POP	GR2	; if	comp\r\n"
 					+ "	POP	GR1	; if	comp\r\n"
 					+ "	CPA	GR1, GR2	; if	comp\r\n"
-					+ "	JZE	TRUE0	; if	comp	comp-op\r\n"
+					+ "	JZE	TRUE"+kankeikazu+"	; if	comp	comp-op\r\n"
 					+ "	LD	GR1, =#FFFF	; if	comp	comp-op\r\n"
-					+ "	JUMP	BOTH"+huku[imahuku].kankeikazu+"	; if	comp	comp-op\r\n"
-					+ "TRUE"+huku[imahuku].kankeikazu+"	LD	GR1, =#0000	; if	comp	comp-op\r\n"
-					+ "BOTH"+huku[imahuku].kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op\n";
+					+ "	JUMP	BOTH"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "TRUE"+kankeikazu+"	LD	GR1, =#0000	; if	comp	comp-op\r\n"
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op\n";
 		}
-		huku[imahuku].kankeikazu++;
+		else if(pinfo[b].goku.equals("<>")) {
+			cas=cas+"	POP	GR2	; if	comp\r\n"
+					+ "	POP	GR1	; if	comp\r\n"
+					+ "	CPA	GR1, GR2	; if	comp\r\n"
+					+ "	JNZ	TRUE"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "	LD	GR1, =#FFFF	; if	comp	comp-op\r\n"
+					+ "	JUMP	BOTH"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "TRUE"+kankeikazu+"	LD	GR1, =#0000	; if	comp	comp-op\r\n"
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op\n";
+		}
+		else if(pinfo[b].goku.equals("<")) {
+			cas=cas+"	POP	GR2	; if	comp\r\n"
+					+ "	POP	GR1	; if	comp\r\n"
+					+ "	CPA	GR1, GR2	; if	comp\r\n"
+					+ "	JMI	TRUE"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "	LD	GR1, =#FFFF	; if	comp	comp-op\r\n"
+					+ "	JUMP	BOTH"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "TRUE"+kankeikazu+"	LD	GR1, =#0000	; if	comp	comp-op\r\n"
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op\n";
+		}
+		else if(pinfo[b].goku.equals(">")) {
+			cas=cas+"	POP	GR2	; if	comp\r\n"
+					+ "	POP	GR1	; if	comp\r\n"
+					+ "	CPA	GR1, GR2	; if	comp\r\n"
+					+ "	JPL	TRUE"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "	LD	GR1, =#FFFF	; if	comp	comp-op\r\n"
+					+ "	JUMP	BOTH"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "TRUE"+kankeikazu+"	LD	GR1, =#0000	; if	comp	comp-op\r\n"
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op";
+		}
+		else {
+			cas=cas+"	POP	GR2	; if	comp\r\n"
+					+ "	POP	GR1	; if	comp\r\n"
+					+ "	CPA	GR1, GR2	; if	comp\r\n"
+					+ "	JMI	TRUE"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "	LD	GR1, =#0000	; if	comp	comp-op\r\n"
+					+ "	JUMP	BOTH"+kankeikazu+"	; if	comp	comp-op\r\n"
+					+ "TRUE"+kankeikazu+"	LD	GR1, =#FFFF	; if	comp	comp-op\r\n"
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op\n";
+		}
+		kankeikazu++;
 	}
 
 	void casdainyutanjun(int b) {
@@ -1875,6 +2078,12 @@ public class Compiler {
 		kou=search("kou",b);
 		puramai=search("kahouenzansi",b);
 		casdainyukou(kou[0]);
+		if(pinfo[hugou[0]].goku.equals("-")) {
+			cas=cas+"	POP	GR2	; if	minus\r\n"
+					+ "	LD	GR1, =0	; if	minus\r\n"
+					+ "	SUBA	GR1, GR2	; if	minus\r\n"
+					+ "	PUSH	0, GR1	; if	minus\n";
+		}
 		if(puramai[0]>0) {
 			int j=0;
 			while(puramai[j]>0) {
@@ -1885,7 +2094,21 @@ public class Compiler {
 		}
 	}
 	void casdainyupuramai(int b){
-		cas=cas+"	POP	GR2	; assign	addition\n"+"	POP	GR1	; assign	addition\n"+"	ADDA	GR1, GR2	; assign	addition\n"+"	PUSH	0, GR1	; assign	addition\n";
+		if(pinfo[b].goku.equals("+")) {
+			cas=cas+"	POP	GR2	; assign	addition\n"+"	POP	GR1	; assign	addition\n"+"	ADDA	GR1, GR2	; assign	addition\n"+"	PUSH	0, GR1	; assign	addition\n";
+		}
+		else if(pinfo[b].goku.equals("-")) {
+			cas=cas+"	POP	GR2	; assign	addition\r\n"
+					+ "	POP	GR1	; assign	addition\r\n"
+					+ "	SUBA	GR1, GR2	; assign	addition\r\n"
+					+ "	PUSH	0, GR1	; assign	addition\n";
+		}
+		else {
+			cas=cas+"	POP	GR2	; if	addition\r\n"
+					+ "	POP	GR1	; if	addition\r\n"
+					+ "	OR	GR1, GR2	; if	addition\r\n"
+					+ "	PUSH	0, GR1	; if	addition\n";
+		}
 	}
 
 	void casdainyukou(int b) {
@@ -1900,7 +2123,25 @@ public class Compiler {
 			cas=cas+"	POP	GR2	; while	assign	multiple\r\n"
 					+ "	POP	GR1	; while	assign	multiple\r\n"
 					+ "	CALL	MULT	; while	assign	multiple\r\n"
-					+ "	PUSH	0, GR2	; while	assign	multiple\n";
+					+ "	PUSH	0, GR2	; while	assign	multiple"+pinfo[b].tnum+"\n";
+		}
+		else if(pinfo[b].goku.equals("/")||pinfo[b].goku.equals("div")) {
+			cas=cas+"	POP	GR2	; if	addition	multiple\r\n"
+					+ "	POP	GR1	; if	addition	multiple\r\n"
+					+ "	CALL	DIV	; if	addition	multiple\r\n"
+					+ "	PUSH	0, GR2	; if	addition	multiple\n";
+		}
+		else if(pinfo[b].goku.equals("mod")) {
+			cas=cas+"	POP	GR2	; if	addition	multiple\r\n"
+					+ "	POP	GR1	; if	addition	multiple\r\n"
+					+ "	CALL	DIV	; if	addition	multiple\r\n"
+					+ "	PUSH	0, GR1	; if	addition	multiple\n";
+		}
+		else {
+			cas=cas+"	POP	GR2	; if	multiple\r\n"
+					+ "	POP	GR1	; if	multiple\r\n"
+					+ "	AND	GR1, GR2	; if	multiple\r\n"
+					+ "	PUSH	0, GR1	; if	multiple\n";
 		}
 	}
 
@@ -1923,7 +2164,8 @@ public class Compiler {
 		if(pinfo[pinfo[b].ko[0]].teigi.equals("integer")) {
 			casdainyuinteger(pinfo[b].ko[0]);
 		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("char")) {
-
+			cas=cas+"	LD	GR1, ="+pinfo[pinfo[b].ko[0]].goku+"	; proc	assign	const-str	('s')\r\n"
+					+ "	PUSH	0, GR1	; proc	assign	const-str\n";
 		}else if(pinfo[pinfo[b].ko[0]].teigi.equals("boolean")) {
 			if(pinfo[pinfo[b].ko[0]].goku.equals("true")) {
 				cas=cas+"	PUSH	#0000	; assign	const-bool\n";
@@ -1950,7 +2192,12 @@ public class Compiler {
 		}
 		if(pinfo[b].ko[1]>0) {//配列の時
 			if(kata.equals("integer")) {
+				System.out.println("A");
 				casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);/////////////////////////////////////////////////
+				cas=cas+"	POP	GR2	; assign	var	"+pinfo[b].goku+"idx\r\n"
+						+ "	ADDA	GR2, ="+(num-1)+"	; assign	var\r\n"
+						+ "	LD	GR1, VAR, GR2	; assign	left\r\n"
+						+ "	PUSH	0, GR1	; assign	left\n";
 			}
 		}else {
 			cas=cas+"	LD	GR2, ="+num+"	; assign	left	var	("+pinfo[b].goku+")\r\n"
@@ -1962,6 +2209,20 @@ public class Compiler {
 	}
 
 	void castetudukiyobidasi(int b) {
+		if(pinfo[b].ko[0]>0) {
+			int j=0;
+			while(pinfo[pinfo[b].ko[0]].ko[j]>0) {
+				casdainyusiki(pinfo[pinfo[b].ko[0]].ko[j]);
+				j++;
+			}
+		}
+		int num=0;
+		for(int i=0;i<prosu;i++) {
+			if(pinfo[b].goku.equals(huku[i].proname)) {
+				num=i-1;
+			}
+		}
+		cas=cas+"	CALL	PROC"+num+"	; proc-call\n";
 
 	}
 
@@ -2029,26 +2290,26 @@ public class Compiler {
 	}
 	void cassyuturyokuteisuu(int b){
 		if(pinfo[pinfo[b].ko[0]].teigi.equals("char")) {
-			huku[imahuku].mojiretusen[huku[imahuku].mojiretukazu]="CHAR"+huku[imahuku].mojiretukazu+"	"+"DC"+"	"+pinfo[pinfo[b].ko[0]].goku;
-			huku[imahuku].mojiretunagasa[huku[imahuku].mojiretukazu]=pinfo[b].goku.length()-2;;
+			mojiretusen[mojiretukazu]="CHAR"+mojiretukazu+"	"+"DC"+"	"+pinfo[pinfo[b].ko[0]].goku;
+			mojiretunagasa[mojiretukazu]=pinfo[b].goku.length()-2;;
 
 
-			cas=cas+"	LD	GR1, ="+ huku[imahuku].mojiretunagasa[0] +"	; output	const-str	('test')\r\n"
+			cas=cas+"	LD	GR1, ="+ mojiretunagasa[mojiretukazu] +"	; output	const-str	("+pinfo[pinfo[b].ko[0]].goku+")\r\n"
 					+ "	PUSH	0, GR1	; output	const-str\r\n"
-					+ "	LAD	GR2, CHAR"+huku[imahuku].mojiretukazu+"	; output	const-str\r\n"
+					+ "	LAD	GR2, CHAR"+mojiretukazu+"	; output	const-str\r\n"
 					+ "	PUSH	0, GR2	; output	const-str\r\n"
 					+ "	POP	GR2	; output\r\n"
 					+ "	POP	GR1	; output\r\n"
 					+ "	CALL	WRTSTR	; output\r\n";
 
-			huku[imahuku].mojiretukazu++;
+			mojiretukazu++;
 
 		}
 
 	}
 
 	void cassyuturyokuhensuu(int b){
-		int num=0;
+		int num=-1;
 		String kata="";
 		for(int i=0;i<huku[imahuku].hensukazu;i++) {
 			if(pinfo[b].goku.equals(huku[imahuku].namae[i])) {
@@ -2056,15 +2317,31 @@ public class Compiler {
 				kata=huku[imahuku].hyoujun[i];
 			}
 		}
+		if(num==-1) {
+			for(int i=0;i<huku[0].hensukazu;i++) {
+				if(pinfo[b].goku.equals(huku[0].namae[i])) {
+					num=huku[0].bango[i];
+					kata=huku[0].hyoujun[i];
+				}
+			}
+		}
 		if(pinfo[b].ko[1]>0) {//配列の時
+			casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);
 			if(kata.equals("integer")) {
-				casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);
 				cas=cas+"	POP	GR2	; assign	var	idx\r\n"
-						+ "	ADDA	GR2, ="+(num-1)+"	; assign	var\r\n"
+						+ "	ADDA	GR2, ="+(num-1)+"	; assign	var"+pinfo[b].goku+"\r\n"
 						+ "	LD	GR1, VAR, GR2	; output	left\r\n"
 						+ "	PUSH	0, GR1	; output	left\r\n"
 						+ "	POP	GR2	; output\r\n"
 						+ "	CALL	WRTINT	; output\n";
+			}
+			else if(kata.equals("char")) {
+				cas=cas+"	POP	GR2	; output	left	var	idx\r\n"
+						+ "	ADDA	GR2, ="+(num-1)+"	; output	left	var"+pinfo[b].goku+"\r\n"
+						+ "	LD	GR1, VAR, GR2	; output	left\r\n"
+						+ "	PUSH	0, GR1	; output	left\r\n"
+						+ "	POP	GR2	; output\r\n"
+						+ "	CALL	WRTCH	; output\n";
 			}
 		}else {
 			if(kata.equals("integer")) {
@@ -2073,6 +2350,14 @@ public class Compiler {
 						+ "	PUSH	0, GR1	; output	left\r\n"
 						+ "	POP	GR2	; output\r\n"
 						+ "	CALL	WRTINT	; output\n";
+			}
+
+			if(kata.equals("char")) {
+				cas=cas+"	LD	GR2, ="+num+"	; output	left	var	"+pinfo[b].goku+"\r\n"
+						+ "	LD	GR1, VAR, GR2	; output	left\r\n"
+						+ "	PUSH	0, GR1	; output	left\r\n"
+						+ "	POP	GR2	; output\r\n"
+						+ "	CALL	WRTCH	; output\n";
 			}
 		}
 	}
@@ -2084,13 +2369,23 @@ public class Compiler {
 
 		for(int i=0;i<prosu;i++) {
 			for(int j=0;j<huku[i].hensukazu;j++) {
+				if(i>0) {
+					for(int k=0;k<i;k++) {
+						for(int l=0;l<huku[k].hensukazu;l++) {
+							huku[i].bango[j]=huku[i].bango[j]+huku[k].yousosu[l];
+						}
+					}
+				}
+
 				for(int k=0;k<j;k++) {
 					huku[i].bango[j]=huku[i].bango[j]+huku[i].yousosu[k];
 
 				}
 				huku[i].hensumemo=huku[i].bango[j]+huku[i].yousosu[j];
+
+
+				varsen="VAR	DS	"+huku[i].hensumemo;
 			}
-			huku[i].varsen="VAR	DS	"+huku[i].hensumemo;
 		}
 	}
 
@@ -2102,6 +2397,15 @@ public class Compiler {
 			jiku[j]="sioeeoiofewoefw";
 			tokenname[j]="sioeeoiofewoefw";
 		}
+
+		for(int i=0;i<255;i++) {
+			hukuprostuck[i]=-1;
+		}
+
+		for(int i=0;i<255;i++) {
+			mojiretusen[i]="";
+		}
+
 		int n=0;
 		Path pa1 = Paths.get(inputFileName);
 
