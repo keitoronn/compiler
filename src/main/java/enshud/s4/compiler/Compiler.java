@@ -20,7 +20,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		new Compiler().run("data/ts/normal13.ts", "tmp/out.cas");
+		new Compiler().run("data/ts/normal16.ts", "tmp/out.cas");
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -1822,22 +1822,24 @@ public class Compiler {
 		if(pinfo[b].ko[0]>0) {
 			int j=0;
 			while(pinfo[b].ko[j]>0) {
-				for(int i=0;i<256;i++) {
+				/*for(int i=0;i<256;i++) {
 					if(hukuprostuck[i]!=-1) {
 						hukuprostuck[i]=imahuku;
 						imahuku=j+1;
 						break;
 					}
-				}
+				}*/
+				imahuku=j+1;
 				cashukuprogramsengen(pinfo[b].ko[j],j);
-				for(int i=255;i>0;i++) {
+				imahuku=0;
+				/*for(int i=255;i>=0;i--) {
 					if(hukuprostuck[i]!=-1) {
 						imahuku=hukuprostuck[i];
 						hukuprostuck[i]=-1;
 
 						break;
 					}
-				}
+				}*/
 				j++;
 			}
 		}
@@ -1974,13 +1976,22 @@ public class Compiler {
 	}
 
 	void cassahenhensu(int b) {
-		int num=0;
+		int num=-1;
 		String kata="";
 		for(int i=0;i<huku[imahuku].hensukazu;i++) {
 			if(pinfo[b].goku.equals(huku[imahuku].namae[i])) {
 				num=huku[imahuku].bango[i];
 
 				kata=huku[imahuku].hyoujun[i];
+			}
+		}
+
+		if(num==-1) {
+			for(int i=0;i<huku[0].hensukazu;i++) {
+				if(pinfo[b].goku.equals(huku[0].namae[i])) {
+					num=huku[0].bango[i];
+					kata=huku[0].hyoujun[i];
+				}
 			}
 		}
 		if(pinfo[b].ko[1]>0) {//左辺が配列の時
@@ -1991,7 +2002,9 @@ public class Compiler {
 					+ "	ST	GR1, VAR, GR2	; assign\n";
 		}
 		else {
-			cas=cas+"	LD	GR2, ="+num+"	; assign	var	("+pinfo[b].goku+")\n"+"	POP	GR1	; assign\n"+"	ST	GR1, VAR, GR2	; assign\n";
+			cas=cas+"	LD	GR2, ="+num+"	; assign	var	("+pinfo[b].goku+")\n"
+					+"	POP	GR1	; assign\n"
+					+"	ST	GR1, VAR, GR2	; assign\n";
 
 		}
 
@@ -1999,6 +2012,7 @@ public class Compiler {
 	}
 
 	void casdainyusiki(int b) {
+		cas=cas+"; L"+gyou[pinfo[b].tnum]+"\n";
 		casdainyutanjun(pinfo[b].ko[0]);
 		if(pinfo[b].ko[1]>0) {
 			casdainyutanjun(pinfo[b].ko[2]);
@@ -2113,9 +2127,18 @@ public class Compiler {
 
 	void casdainyukou(int b) {
 		casdainyuinsi(pinfo[b].ko[0]);
-		if(pinfo[b].ko[1]>0) {
-			casdainyuinsi(pinfo[b].ko[2]);
-			casdainyukakewari(pinfo[b].ko[1]);
+		int[] kakewari=new int[1024];
+		int[] insi=new int[1024];
+		kakewari=search("jouhouenzansi",b);
+		insi=search("insi",b);
+
+		if(kakewari[0]>0) {
+			int j=0;
+			while(kakewari[j]>0) {
+				casdainyuinsi(insi[j+1]);
+				casdainyukakewari(kakewari[j]);
+				j++;
+			}
 		}
 	}
 	void casdainyukakewari(int b) {
@@ -2182,7 +2205,7 @@ public class Compiler {
 
 	void casdainyuhensuu(int b) {
 
-		int num=0;
+		int num=-1;
 		String kata="";
 		for(int i=0;i<huku[imahuku].hensukazu;i++) {
 			if(pinfo[b].goku.equals(huku[imahuku].namae[i])) {
@@ -2190,15 +2213,21 @@ public class Compiler {
 				kata=huku[imahuku].hyoujun[i];
 			}
 		}
+		if(num==-1) {
+			for(int i=0;i<huku[0].hensukazu;i++) {
+				if(pinfo[b].goku.equals(huku[0].namae[i])) {
+					num=huku[0].bango[i];
+					kata=huku[0].hyoujun[i];
+				}
+			}
+		}
 		if(pinfo[b].ko[1]>0) {//配列の時
-			if(kata.equals("integer")) {
-				System.out.println("A");
+				System.out.println(pinfo[pinfo[b].ko[1]].ko[0]);
 				casdainyusiki(pinfo[pinfo[b].ko[1]].ko[0]);/////////////////////////////////////////////////
 				cas=cas+"	POP	GR2	; assign	var	"+pinfo[b].goku+"idx\r\n"
 						+ "	ADDA	GR2, ="+(num-1)+"	; assign	var\r\n"
 						+ "	LD	GR1, VAR, GR2	; assign	left\r\n"
 						+ "	PUSH	0, GR1	; assign	left\n";
-			}
 		}else {
 			cas=cas+"	LD	GR2, ="+num+"	; assign	left	var	("+pinfo[b].goku+")\r\n"
 					+ "	LD	GR1, VAR, GR2	; assign	left\r\n"
@@ -2212,8 +2241,10 @@ public class Compiler {
 		if(pinfo[b].ko[0]>0) {
 			int j=0;
 			while(pinfo[pinfo[b].ko[0]].ko[j]>0) {
-				casdainyusiki(pinfo[pinfo[b].ko[0]].ko[j]);
 				j++;
+			}
+			for(int i=j-1;i>=0;i--) {
+				casdainyusiki(pinfo[pinfo[b].ko[0]].ko[i]);
 			}
 		}
 		int num=0;
@@ -2317,6 +2348,7 @@ public class Compiler {
 				kata=huku[imahuku].hyoujun[i];
 			}
 		}
+		System.out.println("pro"+imahuku+pinfo[b].goku);
 		if(num==-1) {
 			for(int i=0;i<huku[0].hensukazu;i++) {
 				if(pinfo[b].goku.equals(huku[0].namae[i])) {
