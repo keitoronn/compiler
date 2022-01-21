@@ -2069,7 +2069,7 @@ public class Compiler {
 					+ "	LD	GR1, =#FFFF	; if	comp	comp-op\r\n"
 					+ "	JUMP	BOTH"+kankeikazu+"	; if	comp	comp-op\r\n"
 					+ "TRUE"+kankeikazu+"	LD	GR1, =#0000	; if	comp	comp-op\r\n"
-					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op";
+					+ "BOTH"+kankeikazu+"	PUSH	0, GR1	; if	comp	comp-op\n";
 		}
 		else {
 			cas=cas+"	POP	GR2	; if	comp\r\n"
